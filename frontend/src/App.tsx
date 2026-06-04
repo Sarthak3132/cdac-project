@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import AppRoutes from "./app/router";
 import { Button } from "./components/ui/button";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 export default function App() {
   // useEffect(() => {
@@ -17,7 +18,9 @@ export default function App() {
 
   return (
     <div>
-      <AppRoutes />
+      <TooltipProvider>
+        <AppRoutes />
+      </TooltipProvider>
     </div>
   );
 }

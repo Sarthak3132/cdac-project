@@ -7,7 +7,7 @@ export default function PublicRoutes() {
   if (!isAuthenticated) {
     return <Outlet />;
   }
-
+  
   if (user?.role === "ADMIN") {
     return <Navigate to="/admin" replace />;
   }
