@@ -29,7 +29,7 @@ export default function LoginPage() {
         email: email,
         role: "USER"
       }))
-      navigate("/app")
+      navigate("/app/compiler")
     } else {
       setError("Invalid email or password")
       setIsLoading(false)
