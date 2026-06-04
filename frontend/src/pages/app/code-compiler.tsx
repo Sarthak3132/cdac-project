@@ -10,16 +10,26 @@ import { OutputPanel } from "../../features/code-compiler/components/output-pane
 import { LANGUAGES } from "../../features/code-compiler/data/dummy-data";
 import type { Language } from "../../types/code-compiler";
 import { Button } from "../../components/ui/button";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../../app/store";
+
+import { updateCode, setSelectedLanguage } from "../../features/code-compiler/slice/compilerSlice";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 export function CodeCompiler() {
   const [selectedLang, setSelectedLang] = useState<Language>(LANGUAGES[0]);
-  const [code, setCode] = useState(LANGUAGES[0].defaultCode);
   const [output, setOutput] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const dispatch = useDispatch();
 
+  const isMobile = useIsMobile();
+  const code = useSelector(
+    (state: RootState) =>
+      state.compiler.codeByLanguage[selectedLang.id] ?? selectedLang.defaultCode,
+  );
   const handleLangChange = (lang: Language) => {
     setSelectedLang(lang);
-    setCode(lang.defaultCode);
+    dispatch(setSelectedLanguage(lang.id));
     setOutput(null);
   };
 
@@ -44,7 +54,15 @@ export function CodeCompiler() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setCode(selectedLang.defaultCode)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                dispatch(
+                  updateCode({ languageId: selectedLang.id, code: selectedLang.defaultCode }),
+                )
+              }
+            >
               Reset
             </Button>
             <Button
@@ -58,12 +76,19 @@ export function CodeCompiler() {
           </div>
         </div>
 
-        <ResizablePanelGroup className="flex-1">
+        <ResizablePanelGroup orientation={isMobile ? "vertical" : "horizontal"} className="flex-1">
           <ResizablePanel defaultSize={60} minSize={30}>
             <EditorPanel
               language={selectedLang.monacoId}
               value={code}
-              onChange={(v) => setCode(v ?? "")}
+              onChange={(value) =>
+                dispatch(
+                  updateCode({
+                    languageId: selectedLang.id,
+                    code: value ?? "",
+                  }),
+                )
+              }
             />
           </ResizablePanel>
           <ResizableHandle withHandle />

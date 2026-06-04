@@ -4,3 +4,9 @@ export type Language = {
   monacoId: string;
   defaultCode: string;
 };
+
+export interface CompilerState {
+  selectedLanguage: string;
+  codeByLanguage: Record<string, string>;
+}
+
