@@ -5,7 +5,6 @@ import Register from "../pages/auth/register";
 import ForgotPassword from "../pages/auth/forgot-password";
 import UserRoutes from "../routes/user-routes";
 import AppLayout from "../components/layouts/app-layout";
-import Compiler from "../pages/app/application";
 import ProblemSet from "../pages/app/problem-set";
 import ProblemDetail from "../pages/app/problem-detail";
 import ProblemSubmission from "../pages/app/problem-submission";
@@ -14,6 +13,8 @@ import AdminRoutes from "../routes/admin-routes";
 import AdminLayout from "../components/layouts/admin-layout";
 import AdminDashboard from "../pages/admin/admin-dashboard";
 import ResetPassword from "../pages/auth/reset-password";
+import { CodeCompiler } from "../pages/app/code-compiler";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -29,7 +30,7 @@ export default function AppRoutes() {
       {/* User */}
       <Route element={<UserRoutes />}>
         <Route element={<AppLayout />}>
-          <Route path="/app" element={<Compiler />} />
+          <Route path="/app/compiler" element={<CodeCompiler />} />
           <Route path="/app/problems" element={<ProblemSet />} />
           <Route path="/app/problems/:id" element={<ProblemDetail />} />
           <Route path="/app/submissions" element={<ProblemSubmission />} />
@@ -40,7 +41,7 @@ export default function AppRoutes() {
       {/* Admin */}
       <Route element={<AdminRoutes />}>
         <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/" element={<AdminDashboard />} />
           {/* <Route path="/admin/problems" element={<ManageProblemsPage />} /> */}
           {/* <Route path="/admin/users" element={<ManageUsersPage />} /> */}
         </Route>
