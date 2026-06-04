@@ -1,4 +1,5 @@
 export interface User {
+  avatarUrl: string | undefined;
   id: string;
   name: string;
   email: string;
