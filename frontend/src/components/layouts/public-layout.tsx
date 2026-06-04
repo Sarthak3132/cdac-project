@@ -1,4 +1,4 @@
-import { Navbar } from "../navbar";
+import { Navbar } from "../layouts/navbar/navbar";
 import { Outlet } from "react-router-dom";
 
 function PublicLayout() {
