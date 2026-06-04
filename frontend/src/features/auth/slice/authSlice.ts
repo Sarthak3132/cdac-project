@@ -1,6 +1,6 @@
 // this is the auth slice which will handle the authentication state of the user
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { AuthState, User } from "../../../types/auth";
+import type { AuthState, User } from "@/types/auth";
 
 const getInitialState = (): AuthState => {
   const user = localStorage.getItem("user");
