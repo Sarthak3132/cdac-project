@@ -41,27 +41,14 @@ export default function ProblemTable({ problems }: Props) {
           {problems.map((problem) => (
             <tr
               key={problem.id}
-              onClick={() => navigate(`/problems/${problem.id}`)}
-              className="
-                cursor-pointer
-                border-t
-                transition-colors
-                hover:bg-muted/50
-              "
+              onClick={() => navigate(`/app/problems/${problem.id}`)}
+              className="hover:bg-muted/50 cursor-pointer border-t transition-colors"
             >
               <td className="p-3">{problem.id}</td>
 
-              <td className="p-3 font-medium">
-                {problem.title}
-              </td>
+              <td className="p-3 font-medium">{problem.title}</td>
 
-              <td
-                className={`p-3 ${getlevelStyle(
-                  problem.level
-                )}`}
-              >
-                {problem.level}
-              </td>
+              <td className={`p-3 ${getlevelStyle(problem.level)}`}>{problem.level}</td>
             </tr>
           ))}
         </tbody>
