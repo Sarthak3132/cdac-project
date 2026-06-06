@@ -4,6 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import type { Problem, Difficulty } from "@/types/problem-detail";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   Easy: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -12,12 +16,23 @@ const DIFFICULTY_STYLES: Record<Difficulty, string> = {
 };
 
 export function ProblemPanel({ problem }: { problem: Problem }) {
+  const navigate = useNavigate();
   return (
     <div className="flex h-full flex-col">
       <Tabs defaultValue="problem" className="flex h-full flex-col">
-        <div className="border-border border-b px-4">
+        <div className="border-border flex items-center justify-between border-b px-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="text-muted-foreground hover:text-foreground mr-2 -ml-1 h-8 gap-1.5 px-2 text-xs"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Problems
+          </Button>
+
           <TabsList className="h-11 gap-1 bg-transparent p-0">
-            {["problem", "hints"].map((tab) => (
+            {["problem", "hints", "solutions"].map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
@@ -117,7 +132,6 @@ export function ProblemPanel({ problem }: { problem: Problem }) {
             </div>
           </ScrollArea>
         </TabsContent>
-
         {/* Hints Tab */}
         <TabsContent value="hints" className="mt-0 flex-1 overflow-hidden">
           <ScrollArea className="h-full">
