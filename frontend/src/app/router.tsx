@@ -36,7 +36,7 @@ export default function AppRoutes() {
           <Route path="/app/compiler" element={<CodeCompiler />} />
           <Route path="/app/problems" element={<ProblemSet />} />
           <Route path="/app/problems/:id" element={<ProblemDetail />} />
-          <Route path="/app/submissions" element={<ProblemSubmission />} />
+          <Route path="/app/submission/:id" element={<ProblemSubmission />} />
           <Route path="/app/profile" element={<Profile />} />
         </Route>
       </Route>
@@ -54,3 +54,7 @@ export default function AppRoutes() {
     </Routes>
   );
 }
+
+
+
+

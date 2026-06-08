@@ -61,7 +61,7 @@ export function ProblemTable({ problems, page, onPageChange }: ProblemTableProps
                 >
                   <TableCell className="text-center">
                     {solved ? (
-                      <CheckCircle2 className="mx-auto h-4 w-4 text-green-500" />
+                      <CheckCircle2 className="mx-auto h-4 w-4 text-white" />
                     ) : (
                       <Circle className="text-muted-foreground/30 mx-auto h-4 w-4" />
                     )}
