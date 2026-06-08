@@ -3,6 +3,7 @@ import { FileCode2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Editor } from "@monaco-editor/react";
 import type { Submission } from "@/types/submissions";
+import { useTheme } from "@/hooks/use-theme";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -39,6 +40,8 @@ export function SourceCodePanel({ sourceCode, language }: SourceCodePanelProps) 
   const monacoLang = LANGUAGE_MONACO[language] ?? "plaintext";
   const languageLabel = LANGUAGE_LABELS[language] ?? language;
 
+  const themeContext = useTheme()
+
   return (
     <div className="flex w-1/2 min-w-0 flex-col">
       {/* Panel header */}
@@ -63,6 +66,7 @@ export function SourceCodePanel({ sourceCode, language }: SourceCodePanelProps) 
           value={sourceCode}
           theme="vs-dark"
           options={{
+            theme: themeContext.theme === "dark" ? "vs-dark" : "light",
             readOnly: true,
             minimap: { enabled: false },
             fontSize: 13,
