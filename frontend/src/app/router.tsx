@@ -15,6 +15,7 @@ import AdminDashboard from "../pages/admin/admin-dashboard";
 import ResetPassword from "../pages/auth/reset-password";
 import { CodeCompiler } from "../pages/app/code-compiler";
 import PublicLayout from "@/components/layouts/public-layout";
+import LandingPage from "@/pages/landing-page";
 
 export default function AppRoutes() {
   return (
@@ -22,7 +23,7 @@ export default function AppRoutes() {
       {/* Public */}
       <Route element={<PublicRoutes />}>
         <Route element={<PublicLayout />}>
-          <Route path="/" element={<div>Home Page</div>} />
+          <Route path="/" element={<LandingPage/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
