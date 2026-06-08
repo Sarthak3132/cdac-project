@@ -7,13 +7,16 @@ import type { Problem, Difficulty } from "@/types/problem-detail";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-
+import { SubmissionsTab } from "./submissions-tab";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   Easy: "bg-green-500/10 text-green-600 border-green-500/20",
   Medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
   Hard: "bg-red-500/10 text-red-600 border-red-500/20",
 };
+
+
+
 
 export function ProblemPanel({ problem }: { problem: Problem }) {
   const navigate = useNavigate();
@@ -32,7 +35,7 @@ export function ProblemPanel({ problem }: { problem: Problem }) {
           </Button>
 
           <TabsList className="h-11 gap-1 bg-transparent p-0">
-            {["problem", "hints", "solutions"].map((tab) => (
+            {["problem", "hints", "submissions"].map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
@@ -132,6 +135,7 @@ export function ProblemPanel({ problem }: { problem: Problem }) {
             </div>
           </ScrollArea>
         </TabsContent>
+
         {/* Hints Tab */}
         <TabsContent value="hints" className="mt-0 flex-1 overflow-hidden">
           <ScrollArea className="h-full">
@@ -144,6 +148,11 @@ export function ProblemPanel({ problem }: { problem: Problem }) {
               ))}
             </div>
           </ScrollArea>
+        </TabsContent>
+
+        {/* Submissions Tab */}
+        <TabsContent value="submissions" className="mt-0 flex-1 overflow-hidden">
+          <SubmissionsTab />
         </TabsContent>
       </Tabs>
     </div>
