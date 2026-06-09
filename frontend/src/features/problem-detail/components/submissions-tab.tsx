@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { DUMMY_SUBMISSIONS } from "@/features/submission/data/dummy-submission";
 import type { SubmissionStatus } from "@/types/submissions";
 import { Clock, ExternalLink, HardDrive } from "lucide-react";
@@ -47,10 +47,9 @@ function formatDate(iso: string) {
 
 export function SubmissionsTab() {
   const navigate = useNavigate();
-  const { problemId } = useParams<{ problemId: string }>();
 
   const submissions = [...DUMMY_SUBMISSIONS].sort(
-    (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+    (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime(),
   );
 
   if (submissions.length === 0) {
@@ -84,15 +83,12 @@ export function SubmissionsTab() {
                 </span>
               </TableHead>
               <TableHead className="text-xs font-semibold">Submitted</TableHead>
-              <TableHead className="text-xs font-semibold text-right">Details</TableHead>
+              <TableHead className="text-right text-xs font-semibold">Details</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {submissions.map((sub) => (
-              <TableRow
-                key={sub.id}
-                className="hover:bg-muted/40 cursor-pointer transition-colors"
-              >
+              <TableRow key={sub.id} className="hover:bg-muted/40 cursor-pointer transition-colors">
                 <TableCell>
                   <Badge
                     variant="outline"
@@ -104,8 +100,8 @@ export function SubmissionsTab() {
                 <TableCell className="text-muted-foreground text-sm">
                   {LANGUAGE_LABELS[sub.language] ?? sub.language}
                 </TableCell>
-                <TableCell className="text-sm font-mono">{sub.runtime}</TableCell>
-                <TableCell className="text-sm font-mono">{sub.memory}</TableCell>
+                <TableCell className="font-mono text-sm">{sub.runtime}</TableCell>
+                <TableCell className="font-mono text-sm">{sub.memory}</TableCell>
                 <TableCell className="text-muted-foreground text-xs">
                   {formatDate(sub.submittedAt)}
                 </TableCell>
