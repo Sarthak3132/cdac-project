@@ -28,7 +28,7 @@ export default function LoginPage() {
             id: "1",
             name: "Test User",
             email: email,
-            role: "USER",
+            role: "ADMIN",
             avatarUrl: undefined,
           }),
         );
