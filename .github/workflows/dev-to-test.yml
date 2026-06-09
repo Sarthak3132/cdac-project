@@ -53,9 +53,11 @@ jobs:
             docker rm frontend-devcompiler || true
 
             docker run -d \
-              --name frontend-devcompiler \
-              --restart unless-stopped \
-              -p 80:80 \
-              ${{ secrets.DOCKER_USER }}/frontend-devcompiler:test
+            --name frontend-devcompiler \
+            --restart unless-stopped \
+            -p 80:80 \
+            -p 443:443 \
+            -v /etc/letsencrypt:/etc/letsencrypt:ro \
+            ${{ secrets.DOCKER_USER }}/frontend-devcompiler:test
 
             docker image prune -af
