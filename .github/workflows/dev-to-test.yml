@@ -31,7 +31,7 @@ jobs:
       - name: Build and Push Frontend Image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./frontend
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKER_USER }}/frontend-devcompiler:test
