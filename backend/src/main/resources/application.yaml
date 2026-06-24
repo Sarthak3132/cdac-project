@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: backend
+
+  profiles:
+    active: dev   # default = development
+
+server:
+  port: 8080
+
+jwt:
+  secret: your-very-long-secret-key-here
+  expiration: 86400000
+
+logging:
+  level:
+    root: INFO
