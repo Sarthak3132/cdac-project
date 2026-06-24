@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/codeplatform_db
-    username: postgres
-    password: vishal
+    url: jdbc:postgresql://localhost:5432/cp_db
+    username: cp_user
+    password: cp_pass
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -16,8 +16,8 @@ spring:
   rabbitmq:
     host: localhost
     port: 5672
-    username: guest
-    password: guest
+    username: cp_user
+    password: cp_pass
 
   data:
     redis:
