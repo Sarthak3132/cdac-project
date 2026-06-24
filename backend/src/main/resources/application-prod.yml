@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: 5672
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+
+logging:
+  level:
+    root: WARN
+    com.codeplatform.backend: INFO
