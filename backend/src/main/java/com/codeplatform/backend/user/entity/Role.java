@@ -1,4 +1,5 @@
 package com.codeplatform.backend.user.entity;
 
-public class test {
+public enum Role {
+    ADMIN, USER
 }

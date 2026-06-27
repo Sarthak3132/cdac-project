@@ -2,16 +2,18 @@ package com.codeplatform.backend.common.dto;
 
 
 import lombok.Builder;
+import lombok.Data;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Data
 @Builder
 public class ErrorResponse {
-    Instant timestamp;
-    int status;
-    String error;
-    String message;
-    String path;
-    List<String> details;
+    private  Integer status;
+    private  String message;
+    private  String error;
+    private String path;
+    private  LocalDateTime timestamp;
 }
