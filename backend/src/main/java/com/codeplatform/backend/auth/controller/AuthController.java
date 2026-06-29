@@ -6,6 +6,7 @@ import com.codeplatform.backend.auth.dto.response.AuthResponse;
 import com.codeplatform.backend.auth.service.AuthService;
 import com.codeplatform.backend.common.dto.SuccessResponse;
 import com.codeplatform.backend.security.UserContext;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -74,9 +76,10 @@ public class AuthController {
     public ResponseEntity<SuccessResponse<AuthResponse>> me(
             @AuthenticationPrincipal UserContext user
     ) {
-
         String info = "Logged in as: " + user.getUsername()
                 + " | Role: " + user.user().getRole();
+
+
 
         AuthResponse authData = AuthResponse.builder().id(user.getId()).email(user.getEmail()).role(user.getRole()).username(user.getUsername()).build();
 
@@ -85,6 +88,27 @@ public class AuthController {
                         .message(info)
                         .data(authData)
                         .status(HttpStatus.OK.value())
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<SuccessResponse<String>> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        return ResponseEntity.ok(
+                SuccessResponse.<String>builder()
+                        .message("Logout successful")
+                        .data(null)
+                        .status(200)
                         .timestamp(LocalDateTime.now())
                         .build()
         );

@@ -9,8 +9,11 @@ import lombok.*;
 @Table(name = "users")
 @Data
 @EqualsAndHashCode(callSuper = true)
-@AttributeOverride(name = "id", column = @Column(name = "user_id"))
 public class User extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
+
 
     @Column(nullable = false, unique = true)
     private String userName;
@@ -23,7 +26,7 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private Role role = Role.USER;
 
     // Soft delete
     @Column(nullable = false)
