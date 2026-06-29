@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
@@ -28,3 +28,8 @@ logging:
   level:
     com.codeplatform.backend: DEBUG
     org.hibernate.SQL: DEBUG
+
+app:
+  jwt:
+    secret: d3762f8dad5f07576d5a8820e8d6f8da239e7fa3c6f09ce8b561db8d7955c57c
+    expiration: 86400000

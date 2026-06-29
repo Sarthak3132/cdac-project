@@ -2,14 +2,13 @@ package com.codeplatform.backend.common.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class SuccessResponse<T> {
-
     private String message;
     private T data;
-    private int status;
-    private long timestamp;
+    private Integer status;
+    private LocalDateTime timestamp;
 }
