@@ -18,7 +18,6 @@ public class JwtService {
     @Value("${app.jwt.secret}")
     private String secret;
 
-    // Access token: 15 minutes
     @Value("${app.jwt.access-expiration:900000}")
     private long accessExpiration;
 
@@ -27,10 +26,9 @@ public class JwtService {
     }
 
     public String generateAccessToken(String email, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userRole", role);
+
         return Jwts.builder()
-                .claims(claims)
+                .claim("userRole", role)
                 .subject(email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessExpiration))
@@ -38,33 +36,29 @@ public class JwtService {
                 .compact();
     }
 
-    // Opaque refresh token — stored as hash in DB
     public String generateOpaqueRefreshToken() {
-        return UUID.randomUUID().toString().replace("-", "") +
-                UUID.randomUUID().toString().replace("-", "");
+        return UUID.randomUUID().toString().replace("-", "")
+                + UUID.randomUUID().toString().replace("-", "");
     }
 
     public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public boolean isTokenValid(String token, String email) {
-        return extractEmail(token).equals(email) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
-    }
-
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        return claimsResolver.apply(extractAllClaims(token));
-    }
-
-    private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
+    public boolean isTokenValid(String token, String email) {
+
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
                 .getPayload();
+
+        return email.equals(claims.getSubject())
+                && claims.getExpiration().after(new Date());
     }
 }
