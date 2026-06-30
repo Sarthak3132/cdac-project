@@ -1,7 +1,6 @@
 package com.codeplatform.backend.security;
 
-import com.codeplatform.backend.user.entity.User;
-import jakarta.websocket.OnError;
+import com.codeplatform.backend.user.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,44 +8,42 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-public record UserContext(User user) implements UserDetails {
+public record UserContext(UserEntity userEntity) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
-        );
+        return List.of(new SimpleGrantedAuthority("ROLE_" + userEntity.getUserRole().name()));
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return userEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getUserName();
+        return userEntity.getUsername();        // matches column: username
     }
 
-    public String getEmail(){
-        return  user.getEmail();
+    public String getEmail() {
+        return userEntity.getEmail();
     }
 
-    public Long getId(){
-        return user.getId();
+    public Long getId() {
+        return userEntity.getId();
+    }
+
+    public String getRole() {
+        return userEntity.getUserRole().name();
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return !user.isLocked();
-    }
-
-    public String getRole(){
-        return user.getRole().name();
+        return !userEntity.isLocked();          // uses Instant-based helper
     }
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled() && !user.isDeleted();
+        return userEntity.isEnabled() && !userEntity.isDeleted(); // isDeleted() checks deletedAt != null
     }
 }

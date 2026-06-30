@@ -3,18 +3,13 @@ package com.codeplatform.backend.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.time.Clock;
 import java.util.concurrent.Executor;
+
+
 
 @Configuration
 public class AppConfig {
 
-
-    @Bean
-    public Clock clock(){
-        return Clock.systemUTC();
-    }
     @Bean(name = "applicationTaskExecutor")
     public Executor applicationTaskExecutor(){
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

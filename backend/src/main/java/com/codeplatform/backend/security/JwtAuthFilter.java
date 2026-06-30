@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,12 +25,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String token = extractTokenFromCookie(request);
+        String token = extractCookie(request, "access_token"); // <-- changed
 
         if (token == null) {
             filterChain.doFilter(request, response);
@@ -38,39 +39,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String email = jwtService.extractEmail(token);
-
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
                 if (jwtService.isTokenValid(token, email)) {
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                                    userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception ex) {
-            // Invalid/expired/tampered token — leave SecurityContext empty.
-            // Downstream authorization rules will reject the request naturally.
+        } catch (Exception ignored) {
+            // expired/tampered — SecurityContext stays empty, 401 downstream
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private String extractTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() == null) {
-            return null;
-        }
+    private String extractCookie(HttpServletRequest request, String name) {
+        if (request.getCookies() == null) return null;
         for (Cookie cookie : request.getCookies()) {
-            if ("token".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
+            if (name.equals(cookie.getName())) return cookie.getValue();
         }
         return null;
     }

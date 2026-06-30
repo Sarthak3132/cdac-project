@@ -1,7 +1,7 @@
 package com.codeplatform.backend.security;
 
-import com.codeplatform.backend.user.entity.User;
-import com.codeplatform.backend.user.repository.UserRepository;
+import com.codeplatform.backend.user.UserEntity;
+import com.codeplatform.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,9 +16,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("No user found with email: " + email));
-
-        return new UserContext(user);
+        UserEntity userEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("No userEntity found with email: " + email));
+        return new UserContext(userEntity);
     }
 }
