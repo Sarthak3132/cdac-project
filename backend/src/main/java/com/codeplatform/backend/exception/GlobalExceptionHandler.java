@@ -1,6 +1,6 @@
 package com.codeplatform.backend.exception;
 
-import com.codeplatform.backend.common.dto.ErrorResponse;
+import com.codeplatform.backend.common.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,66 +11,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    private ResponseEntity<ErrorResponse> buildResponse(
-            HttpStatus status,
-            String message,
-            HttpServletRequest request
-    ) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(status.value())
-                .error(status.getReasonPhrase())
-                .message(message)
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(status).body(response);
-    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
             ResourceNotFoundException ex,
             HttpServletRequest request
     ) {
+        log.error("Resource not found: {} | Path: {}", ex.getMessage(), request.getRequestURI());
 
-        log.warn(
-                "Resource not found: {} | Path: {}",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return buildResponse(
-                HttpStatus.NOT_FOUND,
-                ex.getMessage(),
-                request
-        );
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnhandledException(
-            Exception ex,
-            HttpServletRequest request
-    ) {
-
-        log.error(
-                "Unhandled exception occurred at path: {}",
-                request.getRequestURI(),
-                ex
-        );
-
-        return buildResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred",
-                request
-        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -78,32 +32,28 @@ public class GlobalExceptionHandler {
             BadCredentialsException ex,
             HttpServletRequest request
     ) {
-        log.warn(
-                "Authentication failed: {} | Path: {}",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return buildResponse(
-                HttpStatus.UNAUTHORIZED,
-                "Invalid email or password",
-                request
-        );
-    }
+        log.warn("Authentication failed: {} | Path: {}", ex.getMessage(), request.getRequestURI());
 
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of("Invalid email or password", request.getRequestURI()));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
             MethodArgumentNotValidException ex,
             HttpServletRequest request
     ) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
+        String message = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .findFirst()
                 .orElse("Validation failed");
 
         log.warn("Validation failed: {} | Path: {}", message, request.getRequestURI());
 
-        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of(message, request.getRequestURI()));
     }
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -111,15 +61,23 @@ public class GlobalExceptionHandler {
             ResponseStatusException ex,
             HttpServletRequest request
     ) {
-        log.warn(
-                "Response status exception: {} | Path: {}",
-                ex.getReason(),
-                request.getRequestURI()
-        );
-        return buildResponse(
-                HttpStatus.valueOf(ex.getStatusCode().value()),
-                ex.getReason(),
-                request
-        );
+        log.warn("{} | Path: {}", ex.getReason(), request.getRequestURI());
+
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(ErrorResponse.of(ex.getReason(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleUnhandledException(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        log.error("Unhandled exception at {}", request.getRequestURI(), ex);
+
+        return ResponseEntity.internalServerError()
+                .body(ErrorResponse.of(
+                        "Internal unexpected error occurred",
+                        request.getRequestURI()
+                ));
     }
 }
