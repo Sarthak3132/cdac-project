@@ -60,6 +60,8 @@ public class AuthService  {
         String rawRefreshToken = jwtService.generateOpaqueRefreshToken();
         refreshTokenService.save(rawRefreshToken, userEntity);
 
+
+
         UserInfo userInfo = UserInfo.builder()
                 .id(userEntity.getId())
                 .email(userEntity.getEmail())
