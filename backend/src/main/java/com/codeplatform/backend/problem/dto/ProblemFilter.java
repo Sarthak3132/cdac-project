@@ -12,5 +12,9 @@ public class ProblemFilter {
 
         private ProblemDifficulty problemDifficulty;
 
-        private String tag;
+        //  Uncomment when Tag module is implemented
+        // private String tag;
+
+        // Uncomment when Submission module is implemented
+        // private Boolean solved;
 }

@@ -15,10 +15,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CreateProblemRequest {
 
-        // authorId removed: the author always comes from the authenticated
-        // UserContext in ProblemService, so a client-supplied authorId was
-        // both unused and a source of confusion for ProblemMapper.
-
         @NotBlank(message = "Title is required")
         private String title;
 

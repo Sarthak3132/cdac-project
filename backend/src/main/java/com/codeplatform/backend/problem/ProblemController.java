@@ -2,10 +2,7 @@ package com.codeplatform.backend.problem;
 
 import com.codeplatform.backend.common.AppConstants;
 import com.codeplatform.backend.common.SuccessResponse;
-import com.codeplatform.backend.problem.dto.CreateProblemRequest;
-import com.codeplatform.backend.problem.dto.ProblemFilter;
-import com.codeplatform.backend.problem.dto.ProblemInfo;
-import com.codeplatform.backend.problem.dto.UpdateProblemRequest;
+import com.codeplatform.backend.problem.dto.*;
 import com.codeplatform.backend.security.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +25,11 @@ public class ProblemController {
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SuccessResponse<ProblemInfo>> createProblem(
+    public ResponseEntity<SuccessResponse<ProblemSummary>> createProblem(
             @AuthenticationPrincipal UserContext userContext,
             @Valid @RequestBody CreateProblemRequest request
     ) {
-        ProblemInfo response = problemService.createProblem(request, userContext);
+        ProblemSummary response = problemService.createProblem(request, userContext);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(SuccessResponse.of("Problem created successfully", response));
@@ -42,36 +39,60 @@ public class ProblemController {
      * Get Problem By Id
      */
     @GetMapping("/{id}")
-    public ResponseEntity<SuccessResponse<ProblemInfo>> getProblemById(
+    public ResponseEntity<SuccessResponse<ProblemDetails>> getProblemById(
             @PathVariable Long id
     ) {
-        ProblemInfo response = problemService.getProblemById(id);
+        ProblemDetails response = problemService.getProblemById(id);
 
         return ResponseEntity.ok(
                 SuccessResponse.of("Problem fetched successfully", response)
         );
     }
 
-    /**
-     * Get All Problems
-     */
     @GetMapping
-    public ResponseEntity<SuccessResponse<Page<ProblemInfo>>> getProblems(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) ProblemDifficulty difficulty,
-            @RequestParam(required = false) String tag
+    public ResponseEntity<SuccessResponse<Page<ProblemSummary>>> getProblems(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "10")
+            int size,
+
+            @RequestParam(required = false)
+            String search,
+
+            @RequestParam(required = false)
+            ProblemDifficulty difficulty
+
+            // @RequestParam(required = false)
+            // String tag,
+
+            // @RequestParam(required = false)
+            // Boolean solved
+
     ) {
+
         ProblemFilter filter = new ProblemFilter();
+
         filter.setSearch(search);
         filter.setProblemDifficulty(difficulty);
-        filter.setTag(tag);
 
-        Page<ProblemInfo> response = problemService.getProblems(filter, page, size);
+        // filter.setTag(tag);
+
+        // filter.setSolved(solved);
+
+        Page<ProblemSummary> response =
+                problemService.getProblems(
+                        filter,
+                        page,
+                        size
+                );
 
         return ResponseEntity.ok(
-                SuccessResponse.of("Problems fetched successfully", response)
+                SuccessResponse.of(
+                        "Problems fetched successfully",
+                        response
+                )
         );
     }
 
@@ -82,11 +103,11 @@ public class ProblemController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SuccessResponse<ProblemInfo>> updateProblem(
+    public ResponseEntity<SuccessResponse<ProblemSummary>> updateProblem(
             @PathVariable Long id,
             @Valid @RequestBody UpdateProblemRequest request
     ) {
-        ProblemInfo response = problemService.updateProblem(id, request);
+        ProblemSummary response = problemService.updateProblem(id, request);
 
         return ResponseEntity.ok(
                 SuccessResponse.of("Problem updated successfully", response)

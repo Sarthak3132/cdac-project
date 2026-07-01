@@ -47,9 +47,6 @@ public class ProblemEntity {
     @Column(name = "memory_limit_kb", nullable = false)
     private Integer memoryLimitKb;
 
-    // @Builder.Default added: without it, Lombok's builder silently ignores
-    // this field initializer and any ProblemEntity built via .builder() (not
-    // just via setters) would get isPublished = null instead of false.
     @Builder.Default
     @Column(name = "is_published", nullable = false)
     private Boolean isPublished = false;

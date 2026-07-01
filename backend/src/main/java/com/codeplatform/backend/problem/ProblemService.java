@@ -2,10 +2,7 @@ package com.codeplatform.backend.problem;
 
 import com.codeplatform.backend.exception.ConflictException;
 import com.codeplatform.backend.exception.ProblemNotFound;
-import com.codeplatform.backend.problem.dto.CreateProblemRequest;
-import com.codeplatform.backend.problem.dto.ProblemFilter;
-import com.codeplatform.backend.problem.dto.ProblemInfo;
-import com.codeplatform.backend.problem.dto.UpdateProblemRequest;
+import com.codeplatform.backend.problem.dto.*;
 import com.codeplatform.backend.security.UserContext;
 import com.codeplatform.backend.user.UserEntity;
 import com.codeplatform.backend.user.UserRepository;
@@ -28,7 +25,7 @@ public class ProblemService {
     /**
      * Create Problem
      */
-    public ProblemInfo createProblem(CreateProblemRequest request, UserContext userContext) {
+    public ProblemSummary createProblem(CreateProblemRequest request, UserContext userContext) {
 
         if (problemRepository.existsBySlug(request.getSlug())) {
             throw new ConflictException("Slug already exists.");
@@ -45,19 +42,19 @@ public class ProblemService {
     /**
      * Get Problem By Id
      */
-    public ProblemInfo getProblemById(Long id) {
+    public ProblemDetails getProblemById(Long id) {
 
         ProblemEntity problem = problemRepository.findById(id)
                 .orElseThrow(() ->
                         new ProblemNotFound("Problem not found with id: " + id));
 
-        return problemMapper.toDto(problem);
+        return problemMapper.toDetailsDto(problem);
     }
 
     /**
      * Update Problem
      */
-    public ProblemInfo updateProblem(
+    public ProblemSummary updateProblem(
             Long id,
             UpdateProblemRequest request
     ) {
@@ -93,7 +90,7 @@ public class ProblemService {
         problemRepository.delete(problem);
     }
 
-    public Page<ProblemInfo> getProblems(
+    public Page<ProblemSummary> getProblems(
             ProblemFilter filter,
             int page,
             int size
@@ -101,10 +98,11 @@ public class ProblemService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return problemRepository.findProblems(
-                filter.getSearch(),
-                filter.getProblemDifficulty(),
-                pageable
-        ).map(problemMapper::toDto);
+        return problemRepository
+                .findAll(
+                        ProblemSpecification.withFilters(filter),
+                        pageable
+                )
+                .map(problemMapper::toDto);
     }
 }

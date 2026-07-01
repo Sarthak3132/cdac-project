@@ -3,19 +3,14 @@ package com.codeplatform.backend.problem.dto;
 import com.codeplatform.backend.problem.ProblemDifficulty;
 import lombok.*;
 
-import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProblemInfo {
+public class ProblemSummary {
 
     private Long id;
-
-    private Long authorId;
-
-    private String authorName;
 
     private String title;
 
@@ -25,14 +20,5 @@ public class ProblemInfo {
 
     private ProblemDifficulty problemDifficulty;
 
-    private Integer timeLimitMs;
-
-    private Integer memoryLimitKb;
-
-    private Boolean isPublished;
-
-    private Instant createdAt;
-
-    private Instant updatedAt;
 
 }
