@@ -29,7 +29,7 @@ public class UserSeeder implements CommandLineRunner {
 
                 // ---------- ADMINS ----------
                 new UserSeed(
-                        "sarthak",
+                        "Msarthak",
                         "sarthakmali22@gmail.com",
                         UserRole.ADMIN
                 ),
@@ -39,7 +39,7 @@ public class UserSeeder implements CommandLineRunner {
                         UserRole.ADMIN
                 ),
                 new UserSeed(
-                        "sarthak",
+                        "Ksarthak",
                         "sarthak@gmail.com",
                         UserRole.ADMIN
                 ),
