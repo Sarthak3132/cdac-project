@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,6 +33,8 @@ public class UpdateProblemRequest{
         @NotNull(message = "Memory limit is required")
         @Min(value = 1, message = "Memory limit must be greater than 0")
         Integer memoryLimitKb;
+
+        private List<Long> tagIds;
 
         Boolean isPublished;
 }

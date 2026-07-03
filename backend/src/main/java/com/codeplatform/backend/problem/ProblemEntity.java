@@ -1,5 +1,6 @@
 package com.codeplatform.backend.problem;
 
+import com.codeplatform.backend.tags.TagEntity;
 import com.codeplatform.backend.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,6 +8,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -58,4 +63,16 @@ public class ProblemEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "problem_tags",
+            joinColumns = @JoinColumn(name = "problem_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    @Builder.Default
+    private Set<TagEntity> tags = new HashSet<>();
+
 }

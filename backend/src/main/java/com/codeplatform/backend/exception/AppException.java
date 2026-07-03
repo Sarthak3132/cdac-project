@@ -10,11 +10,11 @@ import org.springframework.http.HttpStatus;
  * consistent ErrorResponse without per-exception wiring.
  */
 @Getter
-public abstract class AppException extends RuntimeException {
+public  class AppException extends RuntimeException {
 
     private final HttpStatus status;
 
-    protected AppException(String message, HttpStatus status) {
+    public AppException(String message, HttpStatus status) {
         super(message);
         this.status = status;
     }
