@@ -1,7 +1,10 @@
 package com.codeplatform.backend.problem.dto;
 
 import com.codeplatform.backend.problem.ProblemDifficulty;
+import com.codeplatform.backend.tags.dto.TagResponse;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,6 +22,5 @@ public class ProblemSummary {
     private String description;
 
     private ProblemDifficulty problemDifficulty;
-
 
 }
