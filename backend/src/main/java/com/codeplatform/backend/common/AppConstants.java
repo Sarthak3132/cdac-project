@@ -8,4 +8,6 @@ public class  AppConstants {
     public static final String PROBLEM = API_VERSION + "/problems";
     public static final String TAG = API_VERSION + "/tags";
     public static final String LANGUAGE = API_VERSION + "/languages";
+    public static final String HINT = API_VERSION + "/hints";
+
 }
