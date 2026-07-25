@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "@/features/auth/slice/authSlice";
+import { authService } from "@/features/auth/services/auth-service";
 import type { AppDispatch } from "@/app/store";
 import AuthWrapper from "../../features/auth/components/auth-wrapper";
 import { Input } from "@/components/ui/input";
@@ -17,27 +18,34 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      setError("Email and password are required");
+      return;
+    }
 
     setIsLoading(true);
-    setTimeout(() => {
-      if (email === "test@test.com" && password === "password") {
-        dispatch(
-          login({
-            id: "1",
-            name: "Test User",
-            email: email,
-            role: "ADMIN",
-            avatarUrl: undefined,
-          }),
-        );
-        navigate("/app/compiler");
-      } else {
-        setError("Invalid email or password");
-        setIsLoading(false);
-      }
-    }, 2000);
+    setError("");
+
+    try {
+      // Call login endpoint
+      await authService.login(email, password);
+      
+      // Get user data from /me endpoint
+      const user = await authService.getMe();
+      
+      // Dispatch to Redux
+      dispatch(login(user));
+      
+      // Redirect to app
+      navigate("/app/compiler");
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Login failed. Please try again.";
+      setError(message);
+      setIsLoading(false);
+    }
   };
 
   return (

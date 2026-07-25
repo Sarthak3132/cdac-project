@@ -10,6 +10,7 @@ import { NavDesktop } from "./nav-desktop";
 import { NavUserDropdown } from "./nav-user-dropdown";
 import { NavMobile } from "./nav-mobile";
 import type { NavLinkItem } from "@/types/navbar";
+import { authService } from "@/features/auth/services/auth-service"
 
 const NAV_LINKS: NavLinkItem[] = [
   { label: "Code Compiler", to: "/app/compiler" },
@@ -31,10 +32,20 @@ export function Navbar({ variant }: NavbarProps) {
   const isPublic = variant === "public";
   const isAuthenticated = variant === "authenticated";
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
-  };
+  const handleLogout = async () => {
+  try {
+    // Call backend to clear refresh token
+    await authService.logout()
+  } catch (err) {
+    // Silently fail — even if logout endpoint fails,
+    // we still want to clear local state
+  } finally {
+    // Clear Redux state
+    dispatch(logout())
+    // Redirect to login
+    navigate("/login")
+  }
+}
 
   const initials = user?.name
     ? user.name
