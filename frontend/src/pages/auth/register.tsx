@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-
+import { authService } from "@/features/auth/services/auth-service"
 import AuthWrapper from "../../features/auth/components/auth-wrapper"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,14 +14,12 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
-  const [isLoading , setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-
-  
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Validate
     if (!username || !email || !password || !confirmPassword) {
       setError("All fields are required")
       return
@@ -32,12 +30,25 @@ export default function RegisterPage() {
       return
     }
 
-    // dummy success — no real API yet
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters")
+      return
+    }
+
     setIsLoading(true)
-    setTimeout(() => {
+    setError("")
+
+    try {
+      // Call backend register
+      await authService.register(username, email, password)
+      
+      // Redirect to login on success
       navigate("/login")
-  }, 1500)
-    
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Registration failed. Please try again."
+      setError(message)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -74,7 +85,7 @@ export default function RegisterPage() {
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Min. 8 characters"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -92,7 +103,7 @@ export default function RegisterPage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Registering user..." : "Register user"}
+          {isLoading ? "Creating account..." : "Create account"}
         </Button>
 
         <p className="text-center text-sm text-gray-500">
