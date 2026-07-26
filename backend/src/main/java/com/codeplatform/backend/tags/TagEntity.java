@@ -26,4 +26,5 @@ public class TagEntity {
 
     @ManyToMany(mappedBy = "tags")
     private Set<ProblemEntity> problems = new HashSet<>();
+
 }
