@@ -38,4 +38,12 @@ export type AdminSubmission = {
   submittedAt: string;
 };
 
-export type AdminTab = "overview" | "users" | "problems" | "submissions";
+export type AdminTab =
+  | "dashboard"
+  | "users"
+  | "languages"
+  | "problems"
+  | "tags"
+  | "problem-examples"
+  | "testcases"
+  | "hints";
