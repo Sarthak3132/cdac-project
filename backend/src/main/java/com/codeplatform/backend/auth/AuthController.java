@@ -28,15 +28,24 @@ public class AuthController {
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private ResponseCookie buildCookie(String name, String value, int maxAge) {
-        return ResponseCookie.from(name, value)
+    private ResponseCookie buildAccessTokenCookie(String token) {
+        return ResponseCookie.from("access_token", token)
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(true) // false for local HTTP development
+                .sameSite("Lax")
                 .path("/")
-                .maxAge(maxAge)
+                .maxAge(ACCESS_MAX_AGE)
                 .build();
     }
+private ResponseCookie buildRefreshTokenCookie(String token) {
+    return ResponseCookie.from("refresh_token", token)
+            .httpOnly(true)
+            .secure(true)               // false for local HTTP development
+            .sameSite("Lax")
+            .path("/api/v1/auth/refresh")
+            .maxAge(REFRESH_MAX_AGE)
+            .build();
+}
 
     private String extractRefreshCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
@@ -63,8 +72,8 @@ public class AuthController {
     ) {
         TokenPair pair = authService.login(request);
         return ResponseEntity.ok()
-                .header("Set-Cookie", buildCookie("access_token", pair.accessToken(), ACCESS_MAX_AGE).toString())
-                .header("Set-Cookie", buildCookie("refresh_token", pair.refreshToken(), REFRESH_MAX_AGE).toString())
+                .header("Set-Cookie", buildAccessTokenCookie(pair.accessToken()).toString())
+                .header("Set-Cookie", buildRefreshTokenCookie(pair.refreshToken()).toString())
                 .body(SuccessResponse.of("Login successful"));
     }
 
@@ -73,8 +82,8 @@ public class AuthController {
         String rawRefresh = extractRefreshCookie(request);
         TokenPair pair = authService.refresh(rawRefresh);
         return ResponseEntity.ok()
-                .header("Set-Cookie", buildCookie("access_token", pair.accessToken(), ACCESS_MAX_AGE).toString())
-                .header("Set-Cookie", buildCookie("refresh_token", pair.refreshToken(), REFRESH_MAX_AGE).toString())
+                .header("Set-Cookie", buildAccessTokenCookie(pair.accessToken()).toString())
+                .header("Set-Cookie", buildRefreshTokenCookie(pair.refreshToken()).toString())
                 .body(SuccessResponse.of("Token refreshed", null));
     }
 
@@ -90,8 +99,8 @@ public class AuthController {
     public ResponseEntity<SuccessResponse<?>> logout(HttpServletRequest request) {
         authService.logout(extractRefreshCookie(request));
         return ResponseEntity.ok()
-                .header("Set-Cookie", buildCookie("access_token", "", 0).toString())
-                .header("Set-Cookie", buildCookie("refresh_token", "", 0).toString())
+                .header("Set-Cookie", buildAccessTokenCookie("").toString())
+                .header("Set-Cookie", buildRefreshTokenCookie("").toString())
                 .body(SuccessResponse.of("Logout successful"));
     }
 }

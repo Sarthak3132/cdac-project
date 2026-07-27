@@ -4,7 +4,7 @@ export type NavLinkItem = {
 };
 
 export type User = {
-  name: string;
+  username: string;
   email: string;
   avatarUrl?: string;
 };

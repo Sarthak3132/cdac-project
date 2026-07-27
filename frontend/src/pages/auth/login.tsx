@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "@/features/auth/slice/authSlice";
-import { authService } from "@/features/auth/services/auth-service";
 import type { AppDispatch } from "@/app/store";
 import AuthWrapper from "../../features/auth/components/auth-wrapper";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { api } from "@/services/axios-interceptor";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       setError("Email and password are required");
       return;
@@ -30,17 +30,18 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // Call login endpoint
-      await authService.login(email, password);
-      
-      // Get user data from /me endpoint
-      const user = await authService.getMe();
-      
-      // Dispatch to Redux
+      await api.post("/auth/login", { email, password });
+      const res = await api.get("/auth/me");
+      const user = res.data.data;
+
+
       dispatch(login(user));
       
-      // Redirect to app
-      navigate("/app/compiler");
+      if (user.role == "USER") {
+        navigate("/app/compiler");
+      } else {
+        navigate("/admin/dashboard");
+      }
     } catch (err: any) {
       const message = err.response?.data?.message || "Login failed. Please try again.";
       setError(message);

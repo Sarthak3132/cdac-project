@@ -10,7 +10,7 @@ import { NavDesktop } from "./nav-desktop";
 import { NavUserDropdown } from "./nav-user-dropdown";
 import { NavMobile } from "./nav-mobile";
 import type { NavLinkItem } from "@/types/navbar";
-import { authService } from "@/features/auth/services/auth-service"
+import { api } from "@/services/axios-interceptor";
 
 const NAV_LINKS: NavLinkItem[] = [
   { label: "Code Compiler", to: "/app/compiler" },
@@ -33,22 +33,17 @@ export function Navbar({ variant }: NavbarProps) {
   const isAuthenticated = variant === "authenticated";
 
   const handleLogout = async () => {
-  try {
-    // Call backend to clear refresh token
-    await authService.logout()
-  } catch (err) {
-    // Silently fail — even if logout endpoint fails,
-    // we still want to clear local state
-  } finally {
-    // Clear Redux state
-    dispatch(logout())
-    // Redirect to login
-    navigate("/login")
-  }
-}
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+    } finally {
+      dispatch(logout());
+      navigate("/login");
+    }
+  };
 
-  const initials = user?.name
-    ? user.name
+  const initials = user?.username
+    ? user.username
         .split(" ")
         .map((n: string) => n[0])
         .join("")

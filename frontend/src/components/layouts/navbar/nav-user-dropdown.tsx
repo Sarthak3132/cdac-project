@@ -23,15 +23,15 @@ export function NavUserDropdown({ user, initials, onLogout }: NavUserDropdownPro
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="hidden h-8 items-center gap-2 px-2 md:flex">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={user.avatarUrl} alt={user.name} />
+            <AvatarImage src={user.avatarUrl} alt={user.username} />
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
-          <span className="max-w-[100px] truncate text-sm font-medium">{user.name}</span>
+          <span className="max-w-[100px] truncate text-sm font-medium">{user.username}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel className="font-normal">
-          <p className="text-sm font-medium">{user.name}</p>
+          <p className="text-sm font-medium">{user.username}</p>
           <p className="text-muted-foreground truncate text-xs">{user.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

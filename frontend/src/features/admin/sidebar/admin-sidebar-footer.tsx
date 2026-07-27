@@ -8,6 +8,7 @@ import type { RootState } from "@/app/store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { api } from "@/services/axios-interceptor";
 
 export function AdminSidebarFooter() {
   const { theme, toggleTheme } = useTheme();
@@ -15,15 +16,16 @@ export function AdminSidebarFooter() {
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.auth.user);
 
-  const initials = user?.name
-    ? user.name
+  const initials = user?.username
+    ? user.username
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
     : "A";
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await api.post("/auth/logout");
     dispatch(logout());
     navigate("/login");
   };
