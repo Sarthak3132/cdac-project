@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ChevronRight } from "lucide-react";
-
+import { ChevronRight, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -34,25 +34,36 @@ function Testcases() {
 
   const [loadingProblems, setLoadingProblems] = useState(true);
   const [loadingCases, setLoadingCases] = useState(false);
-
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
+  const [size] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  
+  
   const fetchProblems = useCallback(async () => {
-    setLoadingProblems(true);
+  setLoadingProblems(true);
 
-    try {
-      const res = await api.get("/problems", {
-        params: {
-          page: 0,
-          size: 100,
-        },
-      });
+  try {
+    const res = await api.get("/problems", {
+      params: {
+        page,
+        size,
+        search: search || undefined,
+      },
+    });
 
-      setProblems(res.data.data.content);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingProblems(false);
-    }
-  }, []);
+    const data = res.data.data;
+
+    setProblems(data.content);
+    setTotalPages(data.totalPages);
+    setTotalElements(data.totalElements);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoadingProblems(false);
+  }
+}, [page, size, search]);
 
   const fetchTestCases = useCallback(async (problemId: number) => {
     setLoadingCases(true);
@@ -70,7 +81,8 @@ function Testcases() {
   }, []);
 
   useEffect(() => {
-    fetchProblems();
+    const timeout = setTimeout(fetchProblems, 300);
+    return () => clearTimeout(timeout);
   }, [fetchProblems]);
 
   return (
@@ -82,6 +94,20 @@ function Testcases() {
           <p className="text-muted-foreground text-sm">
             Select a problem to manage its test cases.
           </p>
+
+          <div className="relative mt-4">
+  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+
+  <Input
+    className="pl-8"
+    placeholder="Search problems..."
+    value={search}
+    onChange={(e) => {
+      setSearch(e.target.value);
+      setPage(0);
+    }}
+  />
+</div>
         </div>
 
         <Table>
@@ -127,7 +153,39 @@ function Testcases() {
             )}
           </TableBody>
         </Table>
+
+        <div className="flex items-center justify-between border-t p-4">
+  <p className="text-muted-foreground text-sm">
+    Total Problems: {totalElements}
+  </p>
+
+  <div className="flex items-center gap-2">
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={page === 0}
+      onClick={() => setPage((prev) => prev - 1)}
+    >
+      Previous
+    </Button>
+
+    <span className="text-sm">
+      Page {page + 1} of {Math.max(totalPages, 1)}
+    </span>
+
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={page + 1 >= totalPages}
+      onClick={() => setPage((prev) => prev + 1)}
+    >
+      Next
+    </Button>
+  </div>
+</div>
       </div>
+
+      
 
       {/* Right Side */}
       <div className="col-span-7 rounded-md border">
@@ -240,11 +298,17 @@ function Testcases() {
                 ))
               )}
             </TableBody>
-          </Table>
+          </Table>  
         )}
+
+        
       </div>
+      
     </div>
+    
   );
+
+  
 }
 
 export default Testcases;
