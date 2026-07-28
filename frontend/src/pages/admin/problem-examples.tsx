@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { BookOpen } from "lucide-react";
-
+import { BookOpen, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +33,7 @@ import { UpdateProblemExampleDialog } from
 
 import { DeleteProblemExampleDialog } from
   "@/features/admin/components/problem-example/problem-example-delete";
+import { Input } from "@/components/ui/input";
 
 interface Problem {
   id: number;
@@ -45,25 +45,41 @@ function ProblemExamples() {
   const [examples, setExamples] = useState<ProblemExample[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
+  const [page, setPage] = useState(0);
+  const [size] = useState(10);
+
+const [totalPages, setTotalPages] = useState(0);
+const [totalElements, setTotalElements] = useState(0);
   const [selectedProblem, setSelectedProblem] =
     useState<Problem | null>(null);
 
   const [open, setOpen] = useState(false);
 
   const fetchProblems = useCallback(async () => {
-    setIsLoading(true);
+  setIsLoading(true);
 
-    try {
-      const res = await api.get("/problems");
+  try {
+    const res = await api.get("/problems", {
+      params: {
+        page,
+        size,
+        search: search || undefined,
+      },
+    });
 
-      setProblems(res.data.data.content || []);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const data = res.data.data;
+
+    setProblems(data.content);
+    setTotalPages(data.totalPages);
+    setTotalElements(data.totalElements);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setIsLoading(false);
+  }
+}, [page, size, search]);
 
   const fetchExamples = async (problemId: number) => {
     try {
@@ -78,7 +94,9 @@ function ProblemExamples() {
   };
 
   useEffect(() => {
-    fetchProblems();
+    const timeout = setTimeout(fetchProblems, 300);
+
+    return () => clearTimeout(timeout);
   }, [fetchProblems]);
 
   const openExamples = async (problem: Problem) => {
@@ -100,6 +118,20 @@ function ProblemExamples() {
           Manage examples for problems.
         </p>
       </div>
+     
+      <div className="relative max-w-sm">
+  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+
+  <Input
+    className="pl-8"
+    placeholder="Search problems..."
+    value={search}
+    onChange={(e) => {
+      setSearch(e.target.value);
+      setPage(0);
+    }}
+  />
+</div>
 
       <div className="rounded-md border">
         <Table>
@@ -149,6 +181,36 @@ function ProblemExamples() {
         </Table>
       </div>
 
+      <div className="mt-4 flex items-center justify-between">
+  <p className="text-muted-foreground text-sm">
+    Total Problems: {totalElements}
+  </p>
+
+  <div className="flex items-center gap-2">
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={page === 0}
+      onClick={() => setPage((prev) => prev - 1)}
+    >
+      Previous
+    </Button>
+
+    <span className="text-sm">
+      Page {page + 1} of {Math.max(totalPages, 1)}
+    </span>
+
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={page + 1 >= totalPages}
+      onClick={() => setPage((prev) => prev + 1)}
+    >
+      Next
+    </Button>
+  </div>
+</div>
+          
       {/* Dialog */}
 
       <Dialog open={open} onOpenChange={setOpen}>
