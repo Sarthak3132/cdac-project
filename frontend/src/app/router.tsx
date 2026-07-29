@@ -26,11 +26,15 @@ import Languages from "@/pages/admin/languages";
 import Tags from "@/pages/admin/tags";
 import ProblemCreate from "@/features/admin/components/problem-create";
 import ProblemUpdate from "@/features/admin/components/problem-update";
+import { useEffect } from "react";
 
 export default function AppRoutes() {
+  useEffect(() => {
+    console.log("Current pathname:", window.location.pathname);
+  }, []);
   return (
+
     <Routes>
-      <Route path="*" element={<PageNotFound />} />
       {/* Public */}
       <Route element={<PublicRoutes />}>
         <Route element={<PublicLayout />}>
@@ -68,6 +72,7 @@ export default function AppRoutes() {
           <Route path="hints" element={<Hints />} />
         </Route>
       </Route>
+      <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 }

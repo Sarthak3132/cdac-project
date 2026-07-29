@@ -1,28 +1,35 @@
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import AppRoutes from "./app/router";
-import { TooltipProvider } from "./components/ui/tooltip";
-import { login } from "@/features/auth/slice/authSlice";
-import type { AppDispatch } from "@/app/store";
-import { api } from "./services/axios-interceptor";
+import { useEffect, useState } from "react"
+import { useDispatch } from "react-redux"
+import AppRoutes from "./app/router"
+import { TooltipProvider } from "./components/ui/tooltip"
+import { login } from "@/features/auth/slice/authSlice"
+import type { AppDispatch } from "@/app/store"
+import { api } from "./services/axios-interceptor"
 
 export default function App() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>()
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    // On app load, try to restore user session from JWT cookie
     const restoreSession = async () => {
       try {
-        const response = await api.get("/auth/me");
-        const user = response.data.data;
-        dispatch(login(user));
+        const response = await api.get("/auth/me")
+        const user = response.data.data
+        dispatch(login(user))
       } catch (err) {
-        // User not logged in or token expired — silently fail
+        // User not logged in
+      } finally {
+        setIsInitialized(true)
       }
-    };
+    }
 
-    restoreSession();
-  }, []); // Empty dependency array — run only once on mount
+    restoreSession()
+  }, [dispatch])
+
+  // Don't render routes until session is restored
+  if (!isInitialized) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div>
@@ -30,5 +37,5 @@ export default function App() {
         <AppRoutes />
       </TooltipProvider>
     </div>
-  );
+  )
 }
