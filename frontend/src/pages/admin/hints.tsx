@@ -1,7 +1,7 @@
 import React from "react";
 
 function Hints() {
-  return <div>hints</div>;
+  return <div>Hints</div>;
 }
 
 export default Hints;

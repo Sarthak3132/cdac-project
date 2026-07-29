@@ -34,7 +34,7 @@ export function DeleteProblemDialog({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/admin/problems/${problemId}`, {
+      const res = await fetch(`/problems/${problemId}`, {
         method: "DELETE",
       });
 

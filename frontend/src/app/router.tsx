@@ -24,8 +24,8 @@ import Hints from "@/pages/admin/hints";
 import Users from "@/pages/admin/users";
 import Languages from "@/pages/admin/languages";
 import Tags from "@/pages/admin/tags";
-import ProblemCreate from "@/features/admin/components/problem-create";
-import ProblemUpdate from "@/features/admin/components/problem-update";
+import ProblemCreate from "@/features/admin/components/problem/problem-create";
+import ProblemUpdate from "@/features/admin/components/problem/problem-update";
 
 export default function AppRoutes() {
   return (
