@@ -1,7 +1,7 @@
-// components/problem/EditorPanel.tsx
 import { useDispatch, useSelector } from "react-redux";
-import { Loader2, Play, RefreshCw, Send } from "lucide-react";
+import { Play, RefreshCw, Send } from "lucide-react";
 import Editor from "@monaco-editor/react";
+
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,57 +11,69 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  setCode,
-  setLanguage,
-  resetCode,
-  runCode,
-  submitCode,
-} from "@/features/problem-detail/slice/problemSlice";
+
 import type { RootState, AppDispatch } from "@/app/store";
 
-const LANGUAGES = [
-  { id: "cpp", label: "C++" },
-  { id: "python", label: "Python" },
-  { id: "javascript", label: "JavaScript" },
-  { id: "java", label: "Java" },
-];
+import {
+  setLanguage,
+  setCode,
+  resetCode,
+} from "@/features/problem-detail/slice/ProblemEditorSlice";
 
-export function EditorPanel({ problemId }: { problemId: string }) {
+import type { Language } from "@/types/problem-detail";
+import { useEffect } from "react";
+
+export function EditorPanel({
+  problemId,
+  languages,
+}: {
+  problemId: number;
+  languages: Language[];
+}) {
   const dispatch = useDispatch<AppDispatch>();
   const { theme } = useTheme();
-  const { codeByLanguage, selectedLanguage, isRunning, isSubmitting, useCustomInput, customInput } =
-    useSelector((state: RootState) => state.problem);
 
-  const code = codeByLanguage[selectedLanguage] ?? "";
+  const { selectedLanguage, codeByProblem } = useSelector(
+    (state: RootState) => state.problemEditor,
+  );
 
+  const code = codeByProblem[problemId]?.[selectedLanguage] ?? "";
+
+  useEffect(() => {
+    if (!selectedLanguage && languages.length) {
+      dispatch(setLanguage(languages.find((l) => l.name === "C++")?.name ?? languages[0].name));
+    }
+  }, [languages]);
   const handleRun = () => {
-    dispatch(
-      runCode({
-        code,
-        language: selectedLanguage,
-        input: useCustomInput ? customInput : "",
-        problemId,
-      }),
-    );
+    console.log({
+      problemId,
+      language: selectedLanguage,
+      code,
+    });
   };
 
   const handleSubmit = () => {
-    dispatch(submitCode({ code, language: selectedLanguage, problemId }));
+    console.log({
+      problemId,
+      language: selectedLanguage,
+      code,
+    });
   };
 
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
       <div className="border-border flex h-11 items-center justify-between border-b px-3">
-        <Select value={selectedLanguage} onValueChange={(val) => dispatch(setLanguage(val))}>
+        <Select value={selectedLanguage} onValueChange={(value) => dispatch(setLanguage(value))}>
           <SelectTrigger className="h-7 w-36 text-xs">
             <SelectValue />
           </SelectTrigger>
+
           <SelectContent>
-            {LANGUAGES.map((l) => (
-              <SelectItem key={l.id} value={l.id} className="text-xs">
-                {l.label}
+            {languages.map((language) => (
+              <SelectItem key={language.id} value={language.name} className="text-xs">
+                {language.name}
+                {language.version && ` (${language.version})`}
               </SelectItem>
             ))}
           </SelectContent>
@@ -72,36 +84,22 @@ export function EditorPanel({ problemId }: { problemId: string }) {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => dispatch(resetCode())}
-            title="Reset code"
+            onClick={() => dispatch(resetCode({ problemId }))}
           >
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleRun}
-            disabled={isRunning || isSubmitting}
-          >
-            {isRunning ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Play className="mr-1.5 h-3.5 w-3.5" />
-            )}
+
+          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleRun}>
+            <Play className="mr-1.5 h-3.5 w-3.5" />
             Run
           </Button>
+
           <Button
             size="sm"
             className="h-7 bg-green-600 text-xs text-white hover:bg-green-700"
             onClick={handleSubmit}
-            disabled={isRunning || isSubmitting}
           >
-            {isSubmitting ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Send className="mr-1.5 h-3.5 w-3.5" />
-            )}
+            <Send className="mr-1.5 h-3.5 w-3.5" />
             Submit
           </Button>
         </div>
@@ -111,9 +109,17 @@ export function EditorPanel({ problemId }: { problemId: string }) {
       <div className="flex-1 overflow-hidden">
         <Editor
           height="100%"
-          language={selectedLanguage}
+          language={selectedLanguage.toLowerCase()}
           value={code}
-          onChange={(val) => dispatch(setCode({ language: selectedLanguage, code: val ?? "" }))}
+          onChange={(value) =>
+            dispatch(
+              setCode({
+                problemId,
+                language: selectedLanguage,
+                code: value ?? "",
+              }),
+            )
+          }
           theme={theme === "dark" ? "vs-dark" : "light"}
           options={{
             fontSize: 14,

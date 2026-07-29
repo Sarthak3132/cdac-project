@@ -6,11 +6,11 @@ import type { RootState } from "@/app/store";
 import { cn } from "@/lib/utils";
 
 export function OutputPanel() {
-  const { runResult, submitResult, isRunning, isSubmitting } = useSelector(
-    (state: RootState) => state.problem,
-  );
+  // const { runResult, submitResult, isRunning, isSubmitting } = useSelector(
+  //   (state: RootState) => state.problem,
+  // );
 
-  const isLoading = isRunning || isSubmitting;
+  // const isLoading = isRunning || isSubmitting;
 
   return (
     <div className="flex h-full flex-col">
@@ -21,15 +21,15 @@ export function OutputPanel() {
       <ScrollArea className="flex-1">
         <div className="space-y-4 p-4">
           {/* Loading */}
-          {isLoading && (
+          {/* {isLoading && (
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
               {isRunning ? "Running code..." : "Submitting..."}
             </div>
-          )}
+          )} */}
 
           {/* Submit Result */}
-          {submitResult && (
+          {/* {submitResult && (
             <div className="space-y-3">
               <div
                 className={cn(
@@ -75,10 +75,10 @@ export function OutputPanel() {
                 </pre>
               )}
             </div>
-          )}
+          )} */}
 
           {/* Run Result */}
-          {runResult && (
+          {/* {runResult && (
             <div className="space-y-3">
               {runResult.compilerError ? (
                 <div className="space-y-1">
@@ -130,12 +130,12 @@ export function OutputPanel() {
                 ))
               )}
             </div>
-          )}
+          )} */}
 
           {/* Empty */}
-          {!isLoading && !runResult && !submitResult && (
+          {/* {!isLoading && !runResult && !submitResult && (
             <p className="text-muted-foreground text-sm">Run your code to see output here.</p>
-          )}
+          )} */}
         </div>
       </ScrollArea>
     </div>
