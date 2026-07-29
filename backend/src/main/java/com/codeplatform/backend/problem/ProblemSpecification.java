@@ -1,6 +1,8 @@
 package com.codeplatform.backend.problem;
 
 import com.codeplatform.backend.problem.dto.ProblemFilter;
+import com.codeplatform.backend.tags.TagEntity;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -17,11 +19,11 @@ public final class ProblemSpecification {
 
                 search(filter.getSearch()),
 
-                difficulty(filter.getProblemDifficulty())
+                difficulty(filter.getProblemDifficulty()),
 
-                // tag(filter.getTag()),
+                tag(filter.getTag())
 
-                // solved(filter.getSolved(), userId)
+//                solved(filter.getSolved(), userId)
 
         );
     }
@@ -70,7 +72,7 @@ public final class ProblemSpecification {
         };
     }
 
-    /*
+    
     private static Specification<ProblemEntity> tag(String tag) {
 
         return (root, query, cb) -> {
@@ -79,12 +81,16 @@ public final class ProblemSpecification {
                 return cb.conjunction();
             }
 
+            assert query != null;
+            query.distinct(true);
+
+
             Join<ProblemEntity, TagEntity> tagJoin = root.join("tags");
 
             return cb.equal(tagJoin.get("name"), tag);
         };
     }
-    */
+
 
     /*
     private static Specification<ProblemEntity> solved(

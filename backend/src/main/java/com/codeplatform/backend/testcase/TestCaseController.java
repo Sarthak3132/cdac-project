@@ -44,7 +44,6 @@ public class TestCaseController {
      * Get All Test Cases
      */
     @GetMapping("/{problemId}/testcases")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SuccessResponse<List<TestCaseResponse>>> getAll(
             @PathVariable Long problemId
     ) {

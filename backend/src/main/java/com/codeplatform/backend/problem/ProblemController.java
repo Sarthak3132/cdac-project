@@ -62,13 +62,13 @@ public class ProblemController {
             String search,
 
             @RequestParam(required = false)
-            ProblemDifficulty difficulty
+            ProblemDifficulty difficulty,
 
-            // @RequestParam(required = false)
-            // String tag,
+            @RequestParam(required = false)
+            String tag,
 
-            // @RequestParam(required = false)
-            // Boolean solved
+            @RequestParam(required = false)
+            Boolean solved
 
     ) {
 
@@ -77,9 +77,9 @@ public class ProblemController {
         filter.setSearch(search);
         filter.setProblemDifficulty(difficulty);
 
-        // filter.setTag(tag);
+        filter.setTag(tag);
 
-        // filter.setSolved(solved);
+        filter.setSolved(solved);
 
         Page<ProblemSummary> response =
                 problemService.getProblems(
