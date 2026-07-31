@@ -13,16 +13,16 @@ export default function App() {
     // On app load, try to restore user session from JWT cookie
     const restoreSession = async () => {
       try {
-        const user = await api.get("/auth/me").then((res) => res.data.data);
+        const response = await api.get("/auth/me");
+        const user = response.data.data;
         dispatch(login(user));
       } catch (err) {
         // User not logged in or token expired — silently fail
-        // User stays logged out, can go to /login
       }
     };
 
     restoreSession();
-  }, [dispatch]);
+  }, []); // Empty dependency array — run only once on mount
 
   return (
     <div>
