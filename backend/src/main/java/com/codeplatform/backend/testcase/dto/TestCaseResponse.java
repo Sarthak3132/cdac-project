@@ -8,12 +8,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class TestCaseResponse {
-
     private Long id;
-
     private String inputData;
-
+    private String displayInput;
     private String expectedOutput;
-
-    private Boolean hidden;
+    private String explanation;
 }

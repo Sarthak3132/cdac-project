@@ -6,31 +6,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { ProblemPanel } from "@/features/problem-detail/components/problem-panel";
 import { EditorPanel } from "@/features/problem-detail/components/editor-panel";
-import { TestCasePanel } from "@/features/problem-detail/components/test-case-panel";
 import { OutputPanel } from "@/features/problem-detail/components/output-panel";
 import { api } from "@/services/axios-interceptor";
 import { cn } from "@/lib/utils";
 
 import type {
   ProblemDetails,
-  ProblemExample,
   TestCase,
-  Language,
+  ProblemTemplate,
   ProblemHints,
 } from "@/types/problem-detail";
 
 export default function ProblemDetail() {
   const { id } = useParams<{ id: string }>();
 
-  const [customInput, setCustomInput] = useState("");
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [problem, setProblem] = useState<ProblemDetails | null>(null);
-  const [examples, setExamples] = useState<ProblemExample[]>([]);
   const [testCases, setTestCases] = useState<TestCase[]>([]);
-  const [languages, setLanguages] = useState<Language[]>([]);
+  const [templates, setTemplates] = useState<ProblemTemplate[]>([]);
   const [hints, setHints] = useState<ProblemHints[]>([]);
 
   useEffect(() => {
@@ -40,19 +35,16 @@ export default function ProblemDetail() {
       try {
         setLoading(true);
 
-        const [problemRes, exampleRes, testCaseRes, languageRes, hintsRes] = await Promise.all([
+        const [problemRes, testCasesRes, templatesRes, hintsRes] = await Promise.all([
           api.get(`/problems/${id}`),
-          api.get(`/problems/${id}/examples`),
-          api.get(`/problems/${id}/testcases`),
-          api.get("/languages"),
+          api.get(`/problems/${id}/testcases/visible`),
+          api.get(`/problem-templates/problem/${id}`),
           api.get(`/problems/${id}/hints`),
         ]);
-
         setProblem(problemRes.data.data);
-        setExamples(exampleRes.data.data ?? []);
-        setTestCases(testCaseRes.data.data ?? []);
+        setTestCases(testCasesRes.data.data ?? []);
         setHints(hintsRes.data.data ?? []);
-        setLanguages(languageRes.data.data ?? []);
+        setTemplates(templatesRes.data.data ?? []);
       } catch (err) {
         console.error(err);
         setError("Failed to load problem.");
@@ -88,51 +80,24 @@ export default function ProblemDetail() {
             <ResizablePanelGroup orientation="horizontal">
               <ResizablePanel defaultSize={40}>
                 <div className="border-border h-full border-r">
-                  <ProblemPanel problem={problem} examples={examples} hints={hints} />
+                  <ProblemPanel problem={problem} testCases={testCases} hints={hints} />
                 </div>
               </ResizablePanel>
 
               <ResizableHandle withHandle />
 
               <ResizablePanel defaultSize={60}>
-                <EditorPanel problemId={problem.id} languages={languages} />
+                <EditorPanel problemId={problem.id} templates={templates} />
               </ResizablePanel>
             </ResizablePanelGroup>
           </ResizablePanel>
 
           <ResizableHandle withHandle />
-
-          <ResizablePanel defaultSize={35}>
-            <ResizablePanelGroup orientation="horizontal">
-              <ResizablePanel defaultSize={50}>
-                <div className="border-border h-full border-r">
-                  <TestCasePanel
-                    testCases={testCases}
-                    customInput={customInput}
-                    setCustomInput={setCustomInput}
-                  />
-                </div>
-              </ResizablePanel>
-
-              <ResizableHandle withHandle />
-
-              <ResizablePanel defaultSize={50}>
-                {/* problemId={problem.id} */}
-                <OutputPanel />
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ResizablePanel>
         </ResizablePanelGroup>
       </div>
 
       <div className="flex flex-1 flex-col overflow-hidden md:hidden">
-        <MobileView
-          problem={problem}
-          examples={examples}
-          testCases={testCases}
-          languages={languages}
-          hints={hints}
-        />
+        <MobileView problem={problem} testCases={testCases} templates={templates} hints={hints} />
       </div>
     </div>
   );
@@ -140,21 +105,18 @@ export default function ProblemDetail() {
 
 function MobileView({
   problem,
-  examples,
   testCases,
-  languages,
+  templates,
   hints,
 }: {
   problem: ProblemDetails;
-  examples: ProblemExample[];
   testCases: TestCase[];
-  languages: Language[];
+  templates: ProblemTemplate[];
   hints: ProblemHints[];
 }) {
   const tabs = ["Problem", "Editor", "Test Cases", "Output"] as const;
 
   const [active, setActive] = useState<(typeof tabs)[number]>("Problem");
-  const [customInput, setCustomInput] = useState("");
 
   return (
     <>
@@ -175,17 +137,9 @@ function MobileView({
 
       <div className="flex-1 overflow-hidden">
         {active === "Problem" && (
-          <ProblemPanel problem={problem} examples={examples} hints={hints} />
+          <ProblemPanel problem={problem} testCases={testCases} hints={hints} />
         )}
-        {active === "Editor" && <EditorPanel problemId={problem.id} languages={languages} />}
-        {active === "Test Cases" && (
-          <TestCasePanel
-            testCases={testCases}
-            customInput={customInput}
-            setCustomInput={setCustomInput}
-          />
-        )}
-        {/* problemId={problem.id} */}
+        {active === "Editor" && <EditorPanel problemId={problem.id} templates={templates} />}
         {active === "Output" && <OutputPanel />}
       </div>
     </>

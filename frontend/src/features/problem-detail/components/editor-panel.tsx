@@ -20,15 +20,17 @@ import {
   resetCode,
 } from "@/features/problem-detail/slice/ProblemEditorSlice";
 
-import type { Language } from "@/types/problem-detail";
+import type { ProblemTemplate } from "@/types/problem-detail";
 import { useEffect } from "react";
+import { OutputPanel } from "./output-panel";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
 export function EditorPanel({
   problemId,
-  languages,
+  templates,
 }: {
   problemId: number;
-  languages: Language[];
+  templates: ProblemTemplate[];
 }) {
   const dispatch = useDispatch<AppDispatch>();
   const { theme } = useTheme();
@@ -39,25 +41,54 @@ export function EditorPanel({
 
   const code = codeByProblem[problemId]?.[selectedLanguage] ?? "";
 
+  // Pick a default language once templates load
   useEffect(() => {
-    if (!selectedLanguage && languages.length) {
-      dispatch(setLanguage(languages.find((l) => l.name === "C++")?.name ?? languages[0].name));
+    if (!selectedLanguage && templates.length) {
+      const defaultTemplate = templates.find((t) => t.languageName === "Cpp") ?? templates[0];
+      dispatch(setLanguage(defaultTemplate.languageName));
     }
-  }, [languages]);
+  }, [templates]);
+
+  // Seed the editor with boilerplate whenever the active language
+  // has no saved code yet for this problem
+  useEffect(() => {
+    if (!selectedLanguage) return;
+
+    const existingCode = codeByProblem[problemId]?.[selectedLanguage];
+    if (existingCode !== undefined) return;
+
+    const template = templates.find((t) => t.languageName === selectedLanguage);
+    if (template) {
+      dispatch(
+        setCode({
+          problemId,
+          language: selectedLanguage,
+          code: template.starterCode,
+        }),
+      );
+    }
+  }, [selectedLanguage, problemId, templates]);
+
   const handleRun = () => {
-    console.log({
-      problemId,
-      language: selectedLanguage,
-      code,
-    });
+    console.log({ problemId, language: selectedLanguage, code });
   };
 
   const handleSubmit = () => {
-    console.log({
-      problemId,
-      language: selectedLanguage,
-      code,
-    });
+    console.log({ problemId, language: selectedLanguage, code });
+  };
+
+  const handleReset = () => {
+    const template = templates.find((t) => t.languageName === selectedLanguage);
+    dispatch(resetCode({ problemId }));
+    if (template) {
+      dispatch(
+        setCode({
+          problemId,
+          language: selectedLanguage,
+          code: template.starterCode,
+        }),
+      );
+    }
   };
 
   return (
@@ -70,22 +101,20 @@ export function EditorPanel({
           </SelectTrigger>
 
           <SelectContent>
-            {languages.map((language) => (
-              <SelectItem key={language.id} value={language.name} className="text-xs">
-                {language.name}
-                {language.version && ` (${language.version})`}
+            {templates.map((template) => (
+              <SelectItem
+                key={template.languageId}
+                value={template.languageName}
+                className="text-xs"
+              >
+                {template.languageName}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => dispatch(resetCode({ problemId }))}
-          >
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleReset}>
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
 
@@ -107,32 +136,44 @@ export function EditorPanel({
 
       {/* Monaco Editor */}
       <div className="flex-1 overflow-hidden">
-        <Editor
-          height="100%"
-          language={selectedLanguage.toLowerCase()}
-          value={code}
-          onChange={(value) =>
-            dispatch(
-              setCode({
-                problemId,
-                language: selectedLanguage,
-                code: value ?? "",
-              }),
-            )
-          }
-          theme={theme === "dark" ? "vs-dark" : "light"}
-          options={{
-            fontSize: 14,
-            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            lineNumbersMinChars: 3,
-            padding: { top: 12 },
-            renderLineHighlight: "line",
-            tabSize: 4,
-            wordWrap: "on",
-          }}
-        />
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel defaultSize={70} minSize={30}>
+            <Editor
+              height="100%"
+              language={selectedLanguage.toLowerCase()}
+              value={code}
+              onChange={(value) =>
+                dispatch(
+                  setCode({
+                    problemId,
+                    language: selectedLanguage,
+                    code: value ?? "",
+                  }),
+                )
+              }
+              theme={theme === "dark" ? "vs-dark" : "light"}
+              options={{
+                fontSize: 14,
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                lineNumbersMinChars: 3,
+                padding: { top: 12 },
+                renderLineHighlight: "line",
+                tabSize: 4,
+                wordWrap: "on",
+              }}
+            />
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={30} minSize={15}>
+            <div className="h-full overflow-hidden border-t">
+              <OutputPanel />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );

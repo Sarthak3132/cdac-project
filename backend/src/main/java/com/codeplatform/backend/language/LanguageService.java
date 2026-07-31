@@ -20,13 +20,16 @@ public class LanguageService {
     public LanguageResponse create(CreateLanguageRequest request) {
 
         if (repository.existsByNameIgnoreCase(request.getName())) {
-            throw new ConflictException("Language already exists.");
+            throw new ConflictException("Language name already exists.");
         }
+
+
 
         LanguageEntity language = mapper.toEntity(request);
 
-        if (language.getEnabled() == null)
-            language.setEnabled(true);
+        language.setEnabled(
+                request.getEnabled() != null ? request.getEnabled() : true
+        );
 
         return mapper.toDto(repository.save(language));
     }
@@ -55,8 +58,13 @@ public class LanguageService {
                         new ResourceNotFoundException("Language not found."));
 
         language.setName(request.getName());
+        language.setShortName(request.getShortName());
+        language.setFileExtension(request.getFileExtension());
         language.setVersion(request.getVersion());
-        language.setEnabled(request.getEnabled());
+        language.setJudge0LanguageId(request.getJudge0LanguageId());
+        language.setEnabled(
+                request.getEnabled() != null ? request.getEnabled() : true
+        );
 
         return mapper.toDto(repository.save(language));
     }

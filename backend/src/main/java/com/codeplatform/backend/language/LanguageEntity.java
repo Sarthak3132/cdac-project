@@ -2,10 +2,6 @@ package com.codeplatform.backend.language;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.Instant;
 
 @Entity
 @Table(name = "languages")
@@ -23,6 +19,12 @@ public class LanguageEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
+    @Column(nullable = false, unique = true)
+    private String shortName;
+
+    @Column(nullable = false)
+    private String fileExtension;
+
     @Column(nullable = false, length = 50)
     private String version;
 
@@ -33,11 +35,4 @@ public class LanguageEntity {
     @Column(nullable = false)
     private Boolean enabled = true;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
 }
