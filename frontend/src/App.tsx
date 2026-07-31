@@ -7,22 +7,6 @@ import type { AppDispatch } from "@/app/store";
 import { api } from "./services/axios-interceptor";
 
 export default function App() {
-  const dispatch = useDispatch<AppDispatch>();
-
-  useEffect(() => {
-    // On app load, try to restore user session from JWT cookie
-    const restoreSession = async () => {
-      try {
-        const response = await api.get("/auth/me");
-        const user = response.data.data;
-        dispatch(login(user));
-      } catch (err) {
-        // User not logged in or token expired — silently fail
-      }
-    };
-
-    restoreSession();
-  }, []); // Empty dependency array — run only once on mount
 
   return (
     <div>

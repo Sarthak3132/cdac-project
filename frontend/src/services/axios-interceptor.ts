@@ -5,38 +5,49 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Don't intercept the refresh endpoint itself
-    if (originalRequest.url?.includes("/auth/refresh")) {
+    if (!originalRequest) {
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    const url = originalRequest.url ?? "";
 
-      try {
-        if (!isRefreshing) {
-          isRefreshing = true;
-          await api.post("/auth/refresh");
-          isRefreshing = false;
-        }
-
-        return api(originalRequest);
-      } catch (e) {
-        isRefreshing = false;
-
-        window.location.replace("/login");
-
-        return Promise.reject(e);
-      }
+    // Never try to refresh login/register/refresh requests
+    if (
+      url.includes("/auth/login") ||
+      url.includes("/auth/register") ||
+      url.includes("/auth/refresh")
+    ) {
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    try {
+      if (!refreshPromise) {
+        refreshPromise = api.post("/auth/refresh");
+      }
+
+      await refreshPromise;
+      refreshPromise = null;
+
+      // Retry the original request
+      return api(originalRequest);
+    } catch (err) {
+      refreshPromise = null;
+
+      // Let the caller (ProtectedRoutes) handle redirecting
+      return Promise.reject(err);
+    }
   },
 );
