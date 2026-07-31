@@ -3,12 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import type {
-  Difficulty,
-  ProblemDetails,
-  ProblemExample,
-  ProblemHints,
-} from "@/types/problem-detail";
+import type { Difficulty, ProblemDetails, ProblemHints, TestCase } from "@/types/problem-detail";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,11 +17,11 @@ const DIFFICULTY_STYLES: Record<Difficulty, string> = {
 
 export function ProblemPanel({
   problem,
-  examples,
+  testCases,
   hints,
 }: {
   problem: ProblemDetails;
-  examples: ProblemExample[];
+  testCases: TestCase[];
   hints: ProblemHints[];
 }) {
   console.log(hints);
@@ -91,63 +86,49 @@ export function ProblemPanel({
                 <p>{problem.description}</p>
               </div>
 
-              {/* Input / Output Format */}
-              {/* <div className="space-y-3">
-                <Section title="Input Format">
-                  <p className="text-muted-foreground text-sm">{problem.inputFormat}</p>
-                </Section>
-                <Section title="Output Format">
-                  <p className="text-muted-foreground text-sm">{problem.outputFormat}</p>
-                </Section>
-              </div> */}
               <Separator />
-
-              {/* Examples */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold">Examples</h3>
-                {examples.map((ex, i) => (
-                  <div key={i} className="border-border overflow-hidden rounded-lg border">
-                    <div className="bg-muted/50 px-3 py-1.5 text-xs font-medium">
-                      Example {i + 1}
-                    </div>
-                    <div className="divide-border grid grid-cols-2 divide-x">
-                      <div className="space-y-1 p-3">
-                        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                          Input
-                        </p>
-                        <pre className="font-mono text-xs whitespace-pre-wrap">{ex.inputData}</pre>
-                      </div>
-                      <div className="space-y-1 p-3">
-                        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                          Output
-                        </p>
-                        <pre className="font-mono text-xs whitespace-pre-wrap">{ex.outputData}</pre>
-                      </div>
-                    </div>
-                    {ex.explanation && (
-                      <div className="border-border border-t px-3 py-2">
-                        <p className="text-muted-foreground text-xs">
-                          <span className="text-foreground font-medium">Explanation: </span>
-                          {ex.explanation}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
 
               <Separator />
 
-              {/* Constraints */}
-              {/* <Section title="Constraints">
-                <ul className="space-y-1">
-                  {problem.constraints.map((c, i) => (
-                    <li key={i} className="text-muted-foreground font-mono text-xs">
-                      • {c}
-                    </li>
+              {/* Test Cases */}
+              {testCases.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold">Test Cases</h3>
+                  {testCases.map((tc, i) => (
+                    <div key={tc.id} className="border-border overflow-hidden rounded-lg border">
+                      <div className="bg-muted/50 px-3 py-1.5 text-xs font-medium">
+                        Test Case {i + 1}
+                      </div>
+                      <div className="divide-border grid grid-cols-2 divide-x">
+                        <div className="space-y-1 p-3">
+                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                            Input
+                          </p>
+                          <pre className="font-mono text-xs whitespace-pre-wrap">
+                            {tc.displayInput}
+                          </pre>
+                        </div>
+                        <div className="space-y-1 p-3">
+                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                            Output
+                          </p>
+                          <pre className="font-mono text-xs whitespace-pre-wrap">
+                            {tc.expectedOutput}
+                          </pre>
+                        </div>
+                      </div>
+                      {tc.explanation && (
+                        <div className="border-border border-t px-3 py-2">
+                          <p className="text-muted-foreground text-xs">
+                            <span className="text-foreground font-medium">Explanation: </span>
+                            {tc.explanation}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </ul>
-              </Section> */}
+                </div>
+              )}
             </div>
           </ScrollArea>
         </TabsContent>
@@ -174,12 +155,3 @@ export function ProblemPanel({
     </div>
   );
 }
-
-// function Section({ title, children }: { title: string; children: React.ReactNode }) {
-//   return (
-//     <div className="space-y-1.5">
-//       <h3 className="text-sm font-semibold">{title}</h3>
-//       {children}
-//     </div>
-//   );
-// }

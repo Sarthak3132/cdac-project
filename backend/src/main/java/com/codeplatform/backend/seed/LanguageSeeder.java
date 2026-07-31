@@ -27,6 +27,8 @@ public class LanguageSeeder implements CommandLineRunner {
 
                 LanguageEntity.builder()
                         .name("Java")
+                        .shortName("java")
+                        .fileExtension(".java")
                         .version("OpenJDK 21")
                         .judge0LanguageId(91)
                         .enabled(true)
@@ -34,13 +36,17 @@ public class LanguageSeeder implements CommandLineRunner {
 
                 LanguageEntity.builder()
                         .name("Python")
+                        .shortName("py")
+                        .fileExtension(".py")
                         .version("3.12.0")
                         .judge0LanguageId(102)
                         .enabled(true)
                         .build(),
 
                 LanguageEntity.builder()
-                        .name("C++")
+                        .name("Cpp")
+                        .shortName("cpp")
+                        .fileExtension(".cpp")
                         .version("GCC 14.1.0")
                         .judge0LanguageId(105)
                         .enabled(true)
@@ -48,11 +54,14 @@ public class LanguageSeeder implements CommandLineRunner {
 
                 LanguageEntity.builder()
                         .name("JavaScript")
-                        .version("Node.js 22.08.0")
+                        .shortName("js")
+                        .fileExtension(".js")
+                        .version("Node.js 22.8.0")
                         .judge0LanguageId(93)
                         .enabled(true)
                         .build()
         );
+
 
         for (LanguageEntity language : languages) {
 

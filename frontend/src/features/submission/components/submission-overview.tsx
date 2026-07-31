@@ -14,7 +14,7 @@ const STATUS_HEADING_COLOR: Record<SubmissionStatus, string> = {
 };
 
 export const LANGUAGE_LABELS: Record<string, string> = {
-  cpp: "C++",
+  cpp: "Cpp",
   python: "Python",
   java: "Java",
   javascript: "JavaScript",

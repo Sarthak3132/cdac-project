@@ -94,7 +94,7 @@ public class ProblemTemplateSeeder implements CommandLineRunner {
                         """
                 ),
                 new TemplateSeed(
-                        "C++",
+                        "Cpp",
                         """
                         class Solution {
                         public:

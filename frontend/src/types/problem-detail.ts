@@ -7,12 +7,6 @@ export type Language = {
   version: string;
 };
 
-export type TestCase = {
-  id: string;
-  inputData: string;
-  expectedOutput: string;
-};
-
 export type TagResponse = {
   id: number;
   name: string;
@@ -49,12 +43,12 @@ export type TestCaseResult = {
   memory?: string;
 };
 
-export type ProblemExample = {
+export type TestCase = {
   id: number;
   inputData: string;
-  outputData: string;
+  displayInput: string;
+  expectedOutput: string;
   explanation?: string;
-  displayOrder: number;
 };
 
 export type RunResult = {
@@ -72,4 +66,12 @@ export type SubmitResult = {
   runtime?: string;
   memory?: string;
   error?: string;
+};
+export type ProblemTemplate = {
+  id: number;
+  problemId: number;
+  problemTitle: string;
+  languageId: number;
+  languageName: string;
+  starterCode: string;
 };

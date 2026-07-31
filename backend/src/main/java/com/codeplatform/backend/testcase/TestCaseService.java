@@ -43,20 +43,33 @@ public class TestCaseService {
     }
 
     /**
-     * Get All Test Cases Of A Problem
+     * Get All Test Cases Of A Problem (Admin — includes hidden)
      */
     @Transactional(readOnly = true)
     public List<TestCaseResponse> getAll(Long problemId) {
-
         if (!problemRepository.existsById(problemId)) {
             throw new ProblemNotFound("Problem not found with id : " + problemId);
         }
-
         return testCaseRepository.findByProblemId(problemId)
                 .stream()
                 .map(testCaseMapper::toDto)
                 .toList();
     }
+
+    /**
+     * Get Visible Test Cases Of A Problem (User-facing)
+     */
+    @Transactional(readOnly = true)
+    public List<TestCaseResponse> getVisible(Long problemId) {
+        if (!problemRepository.existsById(problemId)) {
+            throw new ProblemNotFound("Problem not found with id : " + problemId);
+        }
+        return testCaseRepository.findByProblemIdAndVisibleTrue(problemId)
+                .stream()
+                .map(testCaseMapper::toDto)
+                .toList();
+    }
+
 
     /**
      * Update Test Case
@@ -65,16 +78,16 @@ public class TestCaseService {
             Long testCaseId,
             UpdateTestCaseRequest request
     ) {
-
         TestCaseEntity testCase = testCaseRepository.findById(testCaseId)
                 .orElseThrow(() ->
                         new TestCaseNotFound("Test case not found."));
 
         testCase.setInputData(request.getInputData());
         testCase.setExpectedOutput(request.getExpectedOutput());
+        testCase.setExplanation(request.getExplanation());
+        testCase.setVisible(request.getVisible());
 
         TestCaseEntity updated = testCaseRepository.save(testCase);
-
         return testCaseMapper.toDto(updated);
     }
 

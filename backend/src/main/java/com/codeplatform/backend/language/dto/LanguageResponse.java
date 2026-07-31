@@ -13,17 +13,13 @@ public class LanguageResponse {
 
     private String name;
 
+    private String shortName;
+
+    private String fileExtension;
+
     private String version;
 
-    private String dockerImage;
-
-    private String sourceFile;
-
-    private String compileCommand;
-
-    private String runCommand;
-
-    private Boolean isCompiled;
+    private Integer judge0LanguageId;
 
     private Boolean enabled;
 }
