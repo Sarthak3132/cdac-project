@@ -35,4 +35,7 @@ public class LanguageEntity {
     @Column(nullable = false)
     private Boolean enabled = true;
 
+    public boolean isEnabled() {
+        return  enabled;
+    }
 }
