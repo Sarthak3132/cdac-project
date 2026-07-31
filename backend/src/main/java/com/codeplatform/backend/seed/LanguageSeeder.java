@@ -22,53 +22,44 @@ public class LanguageSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+
         List<LanguageEntity> languages = List.of(
+
                 LanguageEntity.builder()
                         .name("Java")
-                        .version("17")
-                        .dockerImage("openjdk:17-slim")
-                        .sourceFile("Main.java")
-                        .compileCommand("javac Main.java")
-                        .runCommand("java Main")
-                        .isCompiled(true)
+                        .version("OpenJDK 21")
+                        .judge0LanguageId(91)
                         .enabled(true)
                         .build(),
+
                 LanguageEntity.builder()
                         .name("Python")
-                        .version("3.11")
-                        .dockerImage("python:3.11-slim")
-                        .sourceFile("main.py")
-                        .compileCommand(null)
-                        .runCommand("python3 main.py")
-                        .isCompiled(false)
+                        .version("3.12.0")
+                        .judge0LanguageId(102)
                         .enabled(true)
                         .build(),
+
                 LanguageEntity.builder()
                         .name("C++")
-                        .version("17")
-                        .dockerImage("gcc:13")
-                        .sourceFile("main.cpp")
-                        .compileCommand("g++ -O2 -std=c++17 -o main main.cpp")
-                        .runCommand("./main")
-                        .isCompiled(true)
+                        .version("GCC 14.1.0")
+                        .judge0LanguageId(105)
                         .enabled(true)
                         .build(),
+
                 LanguageEntity.builder()
                         .name("JavaScript")
-                        .version("Node 20")
-                        .dockerImage("node:20-slim")
-                        .sourceFile("main.js")
-                        .compileCommand(null)
-                        .runCommand("node main.js")
-                        .isCompiled(false)
+                        .version("Node.js 22.08.0")
+                        .judge0LanguageId(93)
                         .enabled(true)
                         .build()
         );
 
         for (LanguageEntity language : languages) {
+
             if (languageRepository.existsByNameIgnoreCase(language.getName())) {
                 continue;
             }
+
             languageRepository.save(language);
         }
 

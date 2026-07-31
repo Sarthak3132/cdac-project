@@ -20,30 +20,17 @@ public class LanguageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String version;
 
-    @Column(name = "docker_image", nullable = false)
-    private String dockerImage;
-
-    @Column(name = "source_file", nullable = false)
-    private String sourceFile;
-
-    @Column(name = "compile_command", columnDefinition = "TEXT")
-    private String compileCommand;
-
-    @Column(name = "run_command", nullable = false, columnDefinition = "TEXT")
-    private String runCommand;
+    @Column(name = "judge0_language_id", nullable = false, unique = true)
+    private Integer judge0LanguageId;
 
     @Builder.Default
-    @Column(name = "is_compiled", nullable = false)
-    private Boolean isCompiled = true;
-
-    @Builder.Default
-    @Column(name = "enabled", nullable = false)
+    @Column(nullable = false)
     private Boolean enabled = true;
 
     @CreationTimestamp

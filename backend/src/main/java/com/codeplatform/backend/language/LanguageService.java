@@ -28,9 +28,6 @@ public class LanguageService {
         if (language.getEnabled() == null)
             language.setEnabled(true);
 
-        if (language.getIsCompiled() == null)
-            language.setIsCompiled(true);
-
         return mapper.toDto(repository.save(language));
     }
 
@@ -59,11 +56,6 @@ public class LanguageService {
 
         language.setName(request.getName());
         language.setVersion(request.getVersion());
-        language.setDockerImage(request.getDockerImage());
-        language.setSourceFile(request.getSourceFile());
-        language.setCompileCommand(request.getCompileCommand());
-        language.setRunCommand(request.getRunCommand());
-        language.setIsCompiled(request.getIsCompiled());
         language.setEnabled(request.getEnabled());
 
         return mapper.toDto(repository.save(language));
