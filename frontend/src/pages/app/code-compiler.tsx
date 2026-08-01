@@ -6,6 +6,7 @@ import {
 } from "../../components/ui/resizable";
 import { LanguageSidebar } from "../../features/code-compiler/components/language-sidebar";
 import { EditorPanel } from "../../features/code-compiler/components/editor-panel";
+import { InputPanel } from "../../features/code-compiler/components/input-panel";
 import { OutputPanel } from "../../features/code-compiler/components/output-panel";
 import { Button } from "../../components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,7 +14,20 @@ import type { RootState } from "../../app/store";
 import { setSelectedLanguage, updateCode } from "../../features/code-compiler/slice/compilerSlice";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { api } from "@/services/axios-interceptor";
+import { socket } from "@/app/websocket-provider";
 import type { Language } from "../../types/code-compiler";
+
+interface CodeExecutionResult {
+  sessionId: string;
+  stdout: string | null;
+  stderr: string | null;
+  compileOutput: string | null;
+  statusDescription: string;
+  time: number | null;
+  memory: number | null;
+}
+
+const RUN_TIMEOUT_MS = 20000;
 
 export function CodeCompiler() {
   const dispatch = useDispatch();
@@ -21,7 +35,11 @@ export function CodeCompiler() {
 
   const [languages, setLanguages] = useState<Language[]>([]);
   const [selectedLang, setSelectedLang] = useState<Language>({} as Language);
-  const [output, setOutput] = useState<string | null>(null);
+  const [stdin, setStdin] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+  const [stdout, setStdout] = useState<string | null>(null);
+  const [stderr, setStderr] = useState<string | null>(null);
+  const [compileOutput, setCompileOutput] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
   const code = useSelector((state: RootState) =>
@@ -32,7 +50,6 @@ export function CodeCompiler() {
     const fetchLanguages = async () => {
       try {
         const response = await api.get("/languages");
-
         const data: Language[] = response.data.data;
 
         setLanguages(data);
@@ -49,10 +66,17 @@ export function CodeCompiler() {
     fetchLanguages();
   }, [dispatch]);
 
+  const clearOutput = () => {
+    setStatus(null);
+    setStdout(null);
+    setStderr(null);
+    setCompileOutput(null);
+  };
+
   const handleLangChange = (lang: Language) => {
     setSelectedLang(lang);
     dispatch(setSelectedLanguage(lang.name));
-    setOutput(null);
+    clearOutput();
   };
 
   const handleReset = () => {
@@ -64,17 +88,47 @@ export function CodeCompiler() {
         code: "",
       }),
     );
+    clearOutput();
   };
 
   const handleRun = async () => {
+    if (!selectedLang?.id) return;
+
     setIsRunning(true);
-    setOutput(null);
+    clearOutput();
 
-    await new Promise((r) => setTimeout(r, 800));
+    try {
+      const response = await api.post("/compiler/run", {
+        sourceCode: code,
+        languageId: selectedLang.id,
+        stdin,
+      });
 
-    setOutput("Program executed successfully.");
+      const sessionId: string = response.data.data.sessionId;
 
-    setIsRunning(false);
+      const subscription = socket.subscribe(`/topic/code-result/${sessionId}`, (message) => {
+        const result: CodeExecutionResult = JSON.parse(message.body);
+
+        setStatus(result.statusDescription);
+        setStdout(result.stdout);
+        setStderr(result.stderr);
+        setCompileOutput(result.compileOutput);
+        setIsRunning(false);
+        clearTimeout(timeout);
+      });
+
+      const timeout = setTimeout(() => {
+        setStatus("Timed Out");
+        setStderr("Timed out waiting for a result. Please try again.");
+        setIsRunning(false);
+        subscription.unsubscribe();
+      }, RUN_TIMEOUT_MS);
+    } catch (err) {
+      console.error(err);
+      setStatus("Error");
+      setStderr("Failed to submit code for execution.");
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -106,7 +160,7 @@ export function CodeCompiler() {
         <ResizablePanelGroup orientation={isMobile ? "vertical" : "horizontal"} className="flex-1">
           <ResizablePanel defaultSize={60} minSize={30}>
             <EditorPanel
-              language={selectedLang?.shortName ?? "cpp"}
+              language={selectedLang?.name ?? "cpp"}
               value={code}
               onChange={(value) =>
                 selectedLang &&
@@ -123,7 +177,23 @@ export function CodeCompiler() {
           <ResizableHandle withHandle />
 
           <ResizablePanel defaultSize={40} minSize={20}>
-            <OutputPanel output={output} isRunning={isRunning} />
+            <ResizablePanelGroup orientation="vertical" className="h-full">
+              <ResizablePanel defaultSize={40} minSize={15}>
+                <InputPanel value={stdin} onChange={setStdin} />
+              </ResizablePanel>
+
+              <ResizableHandle withHandle />
+
+              <ResizablePanel defaultSize={60} minSize={20}>
+                <OutputPanel
+                  status={status}
+                  stdout={stdout}
+                  stderr={stderr}
+                  compileOutput={compileOutput}
+                  isRunning={isRunning}
+                />
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

@@ -30,7 +30,7 @@ public class LanguageSeeder implements CommandLineRunner {
                         .shortName("java")
                         .fileExtension(".java")
                         .version("OpenJDK 21")
-                        .judge0LanguageId(91)
+                        .judge0LanguageId(62)
                         .enabled(true)
                         .build(),
 
@@ -38,8 +38,8 @@ public class LanguageSeeder implements CommandLineRunner {
                         .name("Python")
                         .shortName("py")
                         .fileExtension(".py")
-                        .version("3.12.0")
-                        .judge0LanguageId(102)
+                        .version("Python 3")
+                        .judge0LanguageId(71)
                         .enabled(true)
                         .build(),
 
@@ -47,8 +47,8 @@ public class LanguageSeeder implements CommandLineRunner {
                         .name("Cpp")
                         .shortName("cpp")
                         .fileExtension(".cpp")
-                        .version("GCC 14.1.0")
-                        .judge0LanguageId(105)
+                        .version("GCC")
+                        .judge0LanguageId(54)
                         .enabled(true)
                         .build(),
 
@@ -56,8 +56,8 @@ public class LanguageSeeder implements CommandLineRunner {
                         .name("JavaScript")
                         .shortName("js")
                         .fileExtension(".js")
-                        .version("Node.js 22.8.0")
-                        .judge0LanguageId(93)
+                        .version("Node.js")
+                        .judge0LanguageId(63)
                         .enabled(true)
                         .build()
         );
