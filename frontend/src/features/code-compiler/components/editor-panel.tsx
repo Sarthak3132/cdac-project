@@ -12,12 +12,13 @@ export function EditorPanel({
   value: string;
   onChange: (v: string | undefined) => void;
 }) {
+  console.log("EditorPanel rendered with language:", language, "and value:", value);
   const themecontext = useTheme();
   return (
     <Editor
       height="100%"
       theme={themecontext.theme === "dark" ? "vs-dark" : "light"}
-      language={language}
+      language={language.toLocaleLowerCase()}
       value={value}
       onChange={onChange}
       options={{

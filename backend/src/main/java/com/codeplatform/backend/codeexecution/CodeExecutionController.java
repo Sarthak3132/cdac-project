@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/compiler")
+@RequestMapping("/api/v1/compiler")
+
 @RequiredArgsConstructor
 public class CodeExecutionController {
 
