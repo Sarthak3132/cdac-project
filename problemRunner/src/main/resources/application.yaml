@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: problemRunner
+  main:
+    web-application-type: none
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: cp_user
+    password: cp_pass
+
+judge0:
+  base-url: http://13.203.77.52:2358
+
+server:
+  port: 8082

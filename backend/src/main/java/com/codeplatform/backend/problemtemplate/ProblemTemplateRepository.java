@@ -10,6 +10,6 @@ public interface ProblemTemplateRepository extends JpaRepository<ProblemTemplate
     boolean existsByProblemIdAndLanguageId(Long problemId, Long languageId);
 
     Optional<ProblemTemplateEntity> findByProblemIdAndLanguageId(Long problemId, Long languageId);
-
+    Optional<ProblemTemplateEntity> findByProblem_IdAndLanguage_Id(Long problemId, Long languageId);
     List<ProblemTemplateEntity> findByProblemId(Long problemId);
 }
