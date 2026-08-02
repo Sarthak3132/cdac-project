@@ -14,6 +14,7 @@ import com.codeplatform.backend.testcase.TestCaseEntity;
 import com.codeplatform.backend.testcase.TestCaseRepository;
 import com.codeplatform.backend.user.UserEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProblemExecutionRequestService {
 
     private final RabbitTemplate rabbitTemplate;
@@ -59,14 +61,22 @@ public class ProblemExecutionRequestService {
     // submission worker's result can be matched straight back to the row via ID.
     @Transactional
     public String submitFull(Long problemId, ProblemExecutionRequestDto dto, UserEntity currentUser) {
+        log.info("submitFull started | problemId={} userId={}", problemId, currentUser != null ? currentUser.getId() : "NULL");
+
         ProblemEntity problem = getProblem(problemId);
+        log.info("Problem resolved | id={} title={}", problem.getId(), problem.getTitle());
+
         LanguageEntity language = resolveLanguage(dto.languageId());
+        log.info("Language resolved | id={} judge0LanguageId={}", language.getId(), language.getJudge0LanguageId());
+
         String fullSourceCode = assembleSourceCode(problem, language, dto.sourceCode());
+        log.info("Source assembled | length={}", fullSourceCode.length());
 
         List<TestCaseDto> allTestCases = testCaseRepository.findByProblemId(problemId)
                 .stream()
                 .map(this::toDto)
                 .toList();
+        log.info("Test cases fetched | count={}", allTestCases.size());
 
         if (allTestCases.isEmpty()) {
             throw new BadRequestException("No test cases configured for this problem");
@@ -81,14 +91,17 @@ public class ProblemExecutionRequestService {
                 .build();
 
         submission = submissionRepository.save(submission);
+        log.info("Submission row saved | id={}", submission.getId());
+
         String sessionId = submission.getId().toString();
 
         publish(sessionId, fullSourceCode, language.getJudge0LanguageId(), allTestCases,
                 "SUBMIT", problem, RabbitMQConfig.SUBMISSION_QUEUE);
 
+        log.info("Published to submission queue | sessionId={}", sessionId);
+
         return sessionId;
     }
-
     private ProblemEntity getProblem(Long problemId) {
         return problemRepository.findById(problemId)
                 .orElseThrow(() -> new BadRequestException("Problem not found"));

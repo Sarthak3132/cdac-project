@@ -11,8 +11,7 @@ interface OutputPanelProps {
 }
 
 function verdictVariant(status: string): "default" | "destructive" | "secondary" {
-  if (status === "Accepted") return "default";
-  return "destructive";
+  return status === "Accepted" ? "default" : "destructive";
 }
 
 export function OutputPanel({ mode, isExecuting, result, error }: OutputPanelProps) {
@@ -22,6 +21,7 @@ export function OutputPanel({ mode, isExecuting, result, error }: OutputPanelPro
         <span className="text-muted-foreground text-sm font-medium">
           {mode === "submit" ? "Submission Result" : "Test Result"}
         </span>
+
         {result && !isExecuting && (
           <Badge variant={verdictVariant(result.overallStatus)} className="text-xs">
             {result.overallStatus}
@@ -43,36 +43,55 @@ export function OutputPanel({ mode, isExecuting, result, error }: OutputPanelPro
           {!isExecuting && error && <p className="text-red-500">{error}</p>}
 
           {!isExecuting && !error && !result && (
-            <p className="text-muted-foreground text-sm">
-              Click Run to test against visible cases, or Submit to judge your solution.
+            <p className="text-muted-foreground">
+              Click <strong>Run</strong> to test against visible test cases or{" "}
+              <strong>Submit</strong> to judge against all hidden test cases.
             </p>
           )}
 
+          {/* Run Result */}
           {!isExecuting && !error && result && mode === "run" && (
             <div className="space-y-4">
-              {result.results.map((tc, i) => (
-                <div key={tc.testCaseId} className="border-border rounded-md border p-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold">Test Case {i + 1}</span>
+              {result.results.map((tc, index) => (
+                <div key={tc.testCaseId} className="rounded-lg border p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-xs font-semibold">Test Case {index + 1}</span>
+
                     {tc.passed ? (
                       <span className="flex items-center gap-1 text-xs text-green-600">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Passed
+                        <CheckCircle2 className="h-4 w-4" />
+                        Passed
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-xs text-red-500">
-                        <XCircle className="h-3.5 w-3.5" /> {tc.statusDescription}
+                        <XCircle className="h-4 w-4" />
+                        {tc.statusDescription}
                       </span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <p className="text-muted-foreground mb-1">Expected</p>
-                      <pre className="whitespace-pre-wrap">{tc.expectedOutput}</pre>
+                  {tc.inputData && (
+                    <div className="mb-4">
+                      <p className="text-muted-foreground mb-1 text-xs">Input</p>
+                      <pre className="bg-muted rounded p-2 whitespace-pre-wrap">{tc.inputData}</pre>
                     </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-muted-foreground mb-1">Your Output</p>
-                      <pre className={`whitespace-pre-wrap ${tc.passed ? "" : "text-red-500"}`}>
+                      <p className="text-muted-foreground mb-1 text-xs">Expected Output</p>
+                      <pre className="bg-muted rounded p-2 whitespace-pre-wrap">
+                        {tc.expectedOutput}
+                      </pre>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground mb-1 text-xs">Your Output</p>
+                      <pre
+                        className={`bg-muted rounded p-2 whitespace-pre-wrap ${
+                          tc.passed ? "" : "text-red-500"
+                        }`}
+                      >
                         {tc.actualOutput || tc.stderr || "(no output)"}
                       </pre>
                     </div>
@@ -82,8 +101,9 @@ export function OutputPanel({ mode, isExecuting, result, error }: OutputPanelPro
             </div>
           )}
 
+          {/* Submit Result */}
           {!isExecuting && !error && result && mode === "submit" && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-base font-semibold">
                 {result.passedCount} / {result.totalCount} test cases passed
               </p>
@@ -91,18 +111,36 @@ export function OutputPanel({ mode, isExecuting, result, error }: OutputPanelPro
               {result.overallStatus !== "Accepted" &&
                 (() => {
                   const failing = result.results.find((r) => !r.passed);
+
                   if (!failing) return null;
+
                   return (
-                    <div className="border-border rounded-md border p-3 text-xs">
-                      <p className="mb-2 font-semibold text-red-500">{failing.statusDescription}</p>
-                      <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-4 rounded-lg border p-4">
+                      <div className="flex items-center gap-2 font-semibold text-red-500">
+                        <XCircle className="h-4 w-4" />
+                        {failing.statusDescription}
+                      </div>
+
+                      {failing.inputData && (
                         <div>
-                          <p className="text-muted-foreground mb-1">Expected</p>
-                          <pre className="whitespace-pre-wrap">{failing.expectedOutput}</pre>
+                          <p className="text-muted-foreground mb-1 text-xs">Input</p>
+                          <pre className="bg-muted rounded p-2 whitespace-pre-wrap">
+                            {failing.inputData}
+                          </pre>
                         </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-muted-foreground mb-1">Your Output</p>
-                          <pre className="whitespace-pre-wrap text-red-500">
+                          <p className="text-muted-foreground mb-1 text-xs">Expected Output</p>
+                          <pre className="bg-muted rounded p-2 whitespace-pre-wrap">
+                            {failing.expectedOutput}
+                          </pre>
+                        </div>
+
+                        <div>
+                          <p className="text-muted-foreground mb-1 text-xs">Your Output</p>
+                          <pre className="bg-muted rounded p-2 whitespace-pre-wrap text-red-500">
                             {failing.actualOutput || failing.stderr || "(no output)"}
                           </pre>
                         </div>
