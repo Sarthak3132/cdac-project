@@ -30,6 +30,7 @@ import { socket } from "@/app/websocket-provider";
 export interface TestCaseResult {
   testCaseId: string;
   passed: boolean;
+  inputData: string;
   actualOutput: string | null;
   expectedOutput: string;
   stderr: string | null;
