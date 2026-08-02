@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,8 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { getCurrentUserProfile, updateUserProfile } from "@/services/profile-service";
+import { uploadToCloudinary } from "@/services/cloudinary-service";
 import type { UserProfile } from "@/types/profile";
+import { DialogTitle } from "@/components/ui/dialog";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 function Profile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -16,6 +24,10 @@ function Profile() {
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editData, setEditData] = useState({ username: "", bio: "" });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -26,7 +38,7 @@ function Profile() {
         setProfile(data);
         setEditData({ username: data.username, bio: data.bio || "" });
       } catch (err) {
-        setError("Failed to load profile.")
+        setError("Failed to load profile.");
       } finally {
         setLoading(false);
       }
@@ -35,10 +47,36 @@ function Profile() {
     fetchProfile();
   }, []);
 
-  useEffect(() => {
-  console.log("Profile component mounted");
-  return () => console.log("Profile component unmounted");
-}, []);
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please select a valid image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("Image must be less than 5MB");
+      return;
+    }
+
+    try {
+      setUploadingPhoto(true);
+      setPhotoError(null);
+      const imageUrl = await uploadToCloudinary(file);
+
+      const updated = await updateUserProfile({ profileImageUrl: imageUrl });
+      setProfile(updated);
+    } catch (err) {
+      setPhotoError("Failed to upload photo. Please try again.");
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   const handleSave = async () => {
     if (!profile) return;
@@ -109,38 +147,67 @@ function Profile() {
         {/* Display Section */}
         {!isEditMode && (
           <>
-            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={profile.profileImageUrl ?? ""} alt={profile.username} />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
+            <CardHeader className="flex flex-col items-center gap-4 text-center">
+              <div className="relative">
+  <Avatar
+    className={`h-24 w-24 ${profile.profileImageUrl ? "cursor-pointer" : ""}`}
+    onClick={() => profile.profileImageUrl && setShowPhotoModal(true)}
+  >
+    <AvatarImage src={profile.profileImageUrl ?? ""} alt={profile.username} />
+    <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+  </Avatar>
 
-                <div className="space-y-1">
-                  <CardTitle className="text-2xl">{profile.username}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{profile.email}</p>
-                </div>
+  <input
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    onChange={handlePhotoChange}
+    className="hidden"
+    disabled={uploadingPhoto}
+  />
+  <Button
+    size="sm"
+    variant="outline"
+    onClick={(e) => {
+      e.stopPropagation();
+      fileInputRef.current?.click();
+    }}
+    disabled={uploadingPhoto}
+    className="absolute -bottom-1 -right-1"
+  >
+    {uploadingPhoto ? "..." : "✏"}
+  </Button>
+</div>
+
+              <div className="space-y-1">
+                <CardTitle className="text-2xl">{profile.username}</CardTitle>
               </div>
-              <Button onClick={() => setIsEditMode(true)} variant="outline">
+
+              <Button onClick={() => setIsEditMode(true)} variant="outline" className="mt-2">
                 Edit Profile
               </Button>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">Member since</p>
-                <p className="text-sm text-muted-foreground">{joinedDate}</p>
-              </div>
+            {photoError && (
+              <p className="px-6 text-xs text-red-500">{photoError}</p>
+            )}
 
+            <CardContent className="space-y-6">
               <div>
-                <p className="text-sm font-medium">Bio</p>
+                <p className="text-sm font-medium mb-1">Bio</p>
                 <p className="text-sm text-muted-foreground">
                   {profile.bio || "No bio added yet."}
                 </p>
               </div>
+
               <div>
-                <p className="text-sm font-medium">Email</p>
+                <p className="text-sm font-medium mb-1">Email</p>
                 <p className="text-sm text-muted-foreground">{profile.email}</p>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium mb-1">Member since</p>
+                <p className="text-sm text-muted-foreground">{joinedDate}</p>
               </div>
             </CardContent>
           </>
@@ -168,6 +235,16 @@ function Profile() {
               </div>
 
               <div className="space-y-1">
+                <Label htmlFor="email">Email (Read-only)</Label>
+                <Input
+                  id="email"
+                  value={profile.email}
+                  disabled
+                  placeholder="Email"
+                />
+              </div>
+
+              <div className="space-y-1">
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea
                   id="bio"
@@ -175,16 +252,6 @@ function Profile() {
                   onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                   placeholder="Tell us about yourself"
                   className="min-h-24"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="email">Email (Read-only)</Label>
-                <Input
-                  id="email"
-                  value={profile.email}
-                  disabled
-                  placeholder="Email"
                 />
               </div>
 
@@ -208,6 +275,21 @@ function Profile() {
             </CardContent>
           </>
         )}
+
+        {/* Photo Modal */}
+        <Dialog open={showPhotoModal} onOpenChange={setShowPhotoModal}>
+  <DialogContent className="max-w-6xl border-0 bg-transparent shadow-none">
+    <VisuallyHidden.Root>
+      <DialogTitle>Profile Photo</DialogTitle>
+    </VisuallyHidden.Root>
+    <DialogClose className="absolute right-4 top-4 z-50" />
+    <img
+      src={profile.profileImageUrl ?? ""}
+      alt={profile.username}
+      className="w-full rounded-lg"
+    />
+  </DialogContent>
+</Dialog>
       </Card>
     </div>
   );
