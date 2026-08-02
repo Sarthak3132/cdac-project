@@ -140,7 +140,6 @@ function MobileView({
           <ProblemPanel problem={problem} testCases={testCases} hints={hints} />
         )}
         {active === "Editor" && <EditorPanel problemId={problem.id} templates={templates} />}
-        {active === "Output" && <OutputPanel />}
       </div>
     </>
   );
