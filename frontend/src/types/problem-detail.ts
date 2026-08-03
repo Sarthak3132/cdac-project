@@ -1,41 +1,54 @@
 // types/problem.ts
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
-export type Example = {
-  input: string;
-  output: string;
-  explanation?: string;
+export type Language = {
+  id: number;
+  name: string;
+  version: string;
 };
 
-export type TestCase = {
-  id: string;
-  input: string;
-  expectedOutput: string;
+export type TagResponse = {
+  id: number;
+  name: string;
 };
 
-export type Problem = {
-  id: string;
+export type ProblemHints = {
+  id: number;
+  content: string;
+  displayOrder: number;
+};
+
+export interface ProblemDetails {
+  id: number;
   title: string;
-  difficulty: Difficulty;
-  tags: string[];
-  statement: string;
-  inputFormat: string;
-  outputFormat: string;
-  constraints: string[];
-  examples: Example[];
-  hints: string[];
-  editorial: string;
-  testCases: TestCase[];
-};
+  slug: string;
+  description: string;
+  problemDifficulty: "EASY" | "MEDIUM" | "HARD";
+  timeLimitMs: number;
+  memoryLimitKb: number;
+  isPublished: boolean;
+  tags: TagResponse[];
+  createdAt: string;
+  updatedAt: string;
+  testCases: any[];
+}
 
 export type TestCaseResult = {
   id: string;
-  input: string;
+  inputData: string;
   expectedOutput: string;
   actualOutput: string;
   passed: boolean;
   runtime?: string;
   memory?: string;
+};
+
+export type TestCase = {
+  id: number;
+  inputData: string;
+  displayInput: string;
+  expectedOutput: string;
+  explanation?: string;
 };
 
 export type RunResult = {
@@ -53,4 +66,12 @@ export type SubmitResult = {
   runtime?: string;
   memory?: string;
   error?: string;
+};
+export type ProblemTemplate = {
+  id: number;
+  problemId: number;
+  problemTitle: string;
+  languageId: number;
+  languageName: string;
+  starterCode: string;
 };

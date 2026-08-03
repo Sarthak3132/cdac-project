@@ -1,7 +1,7 @@
 import { type CompilerState } from "@/types/code-compiler";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 const initialState: CompilerState = {
-  selectedLanguage: "javascript",
+  selectedLanguage: null,
   codeByLanguage: {},
 };
 
@@ -9,7 +9,7 @@ const compilerSlice = createSlice({
   name: "compiler",
   initialState,
   reducers: {
-    setSelectedLanguage: (state, action: PayloadAction<string>) => {
+    setSelectedLanguage: (state, action: PayloadAction<string | null>) => {
       state.selectedLanguage = action.payload;
     },
     updateCode: (

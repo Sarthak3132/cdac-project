@@ -18,7 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Profile("dev")
 @Slf4j
-@Order(3)
+@Order(4)
 public class HintSeeder implements CommandLineRunner {
 
     private final ProblemRepository problemRepository;

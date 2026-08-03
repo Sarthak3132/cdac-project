@@ -39,21 +39,35 @@ public class TestCaseController {
                         )
                 );
     }
-
     /**
-     * Get All Test Cases
+     * Get All Test Cases (Admin only — includes hidden)
      */
     @GetMapping("/{problemId}/testcases")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SuccessResponse<List<TestCaseResponse>>> getAll(
             @PathVariable Long problemId
     ) {
-
         List<TestCaseResponse> response = testCaseService.getAll(problemId);
-
         return ResponseEntity.ok(
                 SuccessResponse.of(
                         "Test cases fetched successfully.",
+                        response
+                )
+        );
+    }
+
+    /**
+     * Get Visible Test Cases (User-facing)
+     */
+
+    @GetMapping("/{problemId}/testcases/visible")
+    public ResponseEntity<SuccessResponse<List<TestCaseResponse>>> getVisible(
+            @PathVariable Long problemId
+    ) {
+        List<TestCaseResponse> response = testCaseService.getVisible(problemId);
+        return ResponseEntity.ok(
+                SuccessResponse.of(
+                        "Visible test cases fetched successfully.",
                         response
                 )
         );

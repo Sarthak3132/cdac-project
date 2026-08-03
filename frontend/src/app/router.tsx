@@ -24,9 +24,15 @@ import Hints from "@/pages/admin/hints";
 import Users from "@/pages/admin/users";
 import Languages from "@/pages/admin/languages";
 import Tags from "@/pages/admin/tags";
+<<<<<<< HEAD
 import ProblemCreate from "@/features/admin/components/problem-create";
 import ProblemUpdate from "@/features/admin/components/problem-update";
 import { useEffect } from "react";
+=======
+import ProblemCreate from "@/features/admin/components/problem/problem-create";
+import ProblemUpdate from "@/features/admin/components/problem/problem-update";
+import ProtectedRoutes from "@/routes/protected-routes";
+>>>>>>> 76220237217f2bfb86fe03cee68ddcbcf30adec6
 
 export default function AppRoutes() {
   useEffect(() => {
@@ -47,29 +53,30 @@ export default function AppRoutes() {
       </Route>
 
       {/* User */}
-      <Route element={<UserRoutes />}>
-        <Route element={<AppLayout />}>
-          <Route path="/app/compiler" element={<CodeCompiler />} />
-          <Route path="/app/problems" element={<ProblemSet />} />
-          <Route path="/app/problems/:id" element={<ProblemDetail />} />
-          <Route path="/app/submission/:id" element={<ProblemSubmission />} />
-          <Route path="/app/profile" element={<Profile />} />
+      <Route element={<ProtectedRoutes />}>
+        <Route element={<UserRoutes />}>
+          <Route element={<AppLayout />}>
+            <Route path="/app/compiler" element={<CodeCompiler />} />
+            <Route path="/app/problems" element={<ProblemSet />} />
+            <Route path="/app/problems/:id" element={<ProblemDetail />} />
+            <Route path="/app/submission/:id" element={<ProblemSubmission />} />
+            <Route path="/app/profile" element={<Profile />} />
+          </Route>
         </Route>
-      </Route>
-
-      {/* Admin */}
-      <Route element={<AdminRoutes />}>
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<Users />} />
-          <Route path="languages" element={<Languages />} />
-          <Route path="problems" element={<Problems />} />
-          <Route path="problems/create" element={<ProblemCreate />} />
-          <Route path="problems/update/:id" element={<ProblemUpdate />} />
-          <Route path="tags" element={<Tags />} />
-          <Route path="problem-examples" element={<ProblemExamples />} />
-          <Route path="testcases" element={<Testcases />} />
-          <Route path="hints" element={<Hints />} />
+        {/* Admin */}
+        <Route element={<AdminRoutes />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="languages" element={<Languages />} />
+            <Route path="problems" element={<Problems />} />
+            <Route path="problems/create" element={<ProblemCreate />} />
+            <Route path="problems/update/:id" element={<ProblemUpdate />} />
+            <Route path="tags" element={<Tags />} />
+            <Route path="problem-examples" element={<ProblemExamples />} />
+            <Route path="testcases" element={<Testcases />} />
+            <Route path="hints" element={<Hints />} />
+          </Route>
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

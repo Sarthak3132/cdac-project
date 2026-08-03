@@ -25,7 +25,7 @@ const STATUS_STYLES: Record<SubmissionStatus, string> = {
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {
-  cpp: "C++",
+  cpp: "Cpp",
   python: "Python",
   java: "Java",
   javascript: "JavaScript",

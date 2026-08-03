@@ -1,6 +1,7 @@
 package com.codeplatform.backend.language.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,20 +13,16 @@ public class CreateLanguageRequest {
     private String name;
 
     @NotBlank
+    private String shortName;
+
+    @NotBlank
+    private String fileExtension;
+
+    @NotBlank
     private String version;
 
-    @NotBlank
-    private String dockerImage;
-
-    @NotBlank
-    private String sourceFile;
-
-    private String compileCommand;
-
-    @NotBlank
-    private String runCommand;
-
-    private Boolean isCompiled;
+    @NotNull
+    private Integer judge0LanguageId;
 
     private Boolean enabled;
 }

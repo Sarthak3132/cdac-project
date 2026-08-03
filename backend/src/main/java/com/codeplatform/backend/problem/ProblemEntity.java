@@ -8,15 +8,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(
-        name = "problems"
-)
+@Table(name = "problems")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,6 +26,7 @@ public class ProblemEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author", nullable = false)
+    @ToString.Exclude
     private UserEntity author;
 
     @Column(nullable = false)
@@ -37,7 +34,6 @@ public class ProblemEntity {
 
     @Column(nullable = false, unique = true)
     private String slug;
-
 
     @Column(nullable = false)
     private String description;
@@ -64,8 +60,6 @@ public class ProblemEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-
-
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "problem_tags",
@@ -73,6 +67,6 @@ public class ProblemEntity {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     @Builder.Default
+    @ToString.Exclude
     private Set<TagEntity> tags = new HashSet<>();
-
 }

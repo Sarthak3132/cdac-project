@@ -8,7 +8,7 @@ import { useTheme } from "@/hooks/use-theme";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const LANGUAGE_LABELS: Record<string, string> = {
-  cpp: "C++",
+  cpp: "Cpp",
   python: "Python",
   java: "Java",
   javascript: "JavaScript",
