@@ -217,87 +217,82 @@ function Testcases() {
         ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Input</TableHead>
-                <TableHead>Expected Output</TableHead>
-                <TableHead>Hidden</TableHead>
-                <TableHead className="text-right">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+  <TableRow>
+    <TableHead>Display Input</TableHead>
+    <TableHead>Expected Output</TableHead>
+    <TableHead>Explanation</TableHead>
+    <TableHead className="text-right">
+      Actions
+    </TableHead>
+  </TableRow>
+</TableHeader>
 
             <TableBody>
-              {loadingCases ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-12" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="ml-auto h-8 w-20" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : testCases.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="text-muted-foreground py-8 text-center"
-                  >
-                    No test cases found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                testCases.map((testCase) => (
-                  <TableRow key={testCase.id}>
-                    <TableCell className="max-w-xs truncate font-mono">
-                      {testCase.inputData}
-                    </TableCell>
+  {loadingCases ? (
+    Array.from({ length: 4 }).map((_, i) => (
+      <TableRow key={i}>
+        <TableCell>
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
 
-                    <TableCell className="max-w-xs truncate font-mono">
-                      {testCase.expectedOutput}
-                    </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
 
-                    <TableCell>
-                      <Badge
-                        variant={
-                          testCase.hidden
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {testCase.hidden ? "Yes" : "No"}
-                      </Badge>
-                    </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
 
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <UpdateTestCaseDialog
-                          testCase={testCase}
-                          onUpdated={() =>
-                            fetchTestCases(selectedProblem.id)
-                          }
-                        />
+        <TableCell>
+          <Skeleton className="ml-auto h-8 w-20" />
+        </TableCell>
+      </TableRow>
+    ))
+  ) : testCases.length === 0 ? (
+    <TableRow>
+      <TableCell
+        colSpan={4}
+        className="py-8 text-center text-muted-foreground"
+      >
+        No test cases found.
+      </TableCell>
+    </TableRow>
+  ) : (
+    testCases.map((testCase) => (
+      <TableRow key={testCase.id}>
+        <TableCell className="max-w-xs whitespace-pre-wrap break-words">
+  {testCase.inputData || "-"}
+</TableCell>
 
-                        <DeleteTestCaseDialog
-                          testCaseId={testCase.id}
-                          onDeleted={() =>
-                            fetchTestCases(selectedProblem.id)
-                          }
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
+<TableCell className="max-w-xs whitespace-pre-wrap break-words">
+  {testCase.expectedOutput}
+</TableCell>
+
+<TableCell className="max-w-xs whitespace-pre-wrap break-words">
+  {testCase.explanation || "-"}
+</TableCell>
+
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-1">
+            <UpdateTestCaseDialog
+              testCase={testCase}
+              onUpdated={() =>
+                fetchTestCases(selectedProblem.id)
+              }
+            />
+
+            <DeleteTestCaseDialog
+              testCaseId={testCase.id}
+              onDeleted={() =>
+                fetchTestCases(selectedProblem.id)
+              }
+            />
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
           </Table>  
         )}
 

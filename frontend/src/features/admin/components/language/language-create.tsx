@@ -36,18 +36,13 @@ export function CreateLanguageDialog({
 
     try {
       await api.post("/languages", {
-        name: values.name,
-        version: values.version,
-        dockerImage: values.dockerImage,
-        sourceFile: values.sourceFile,
-        compileCommand:
-          values.compileCommand.trim() === ""
-            ? null
-            : values.compileCommand,
-        runCommand: values.runCommand,
-        isCompiled: values.isCompiled,
-        enabled: values.enabled,
-      });
+  name: values.name,
+  shortName: values.shortName,
+  fileExtension: values.fileExtension,
+  version: values.version,
+  judge0LanguageId: Number(values.judge0LanguageId),
+  enabled: values.enabled,
+});
 
       toast.success("Language created successfully");
 

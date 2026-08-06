@@ -54,11 +54,11 @@ export function AdminSidebarFooter() {
       {/* User profile */}
       <div className="flex items-center gap-3 rounded-md px-3 py-2">
         <Avatar className="h-7 w-7 shrink-0">
-          <AvatarImage src={user?.avatarUrl} alt={user?.name} />
+          <AvatarImage src={user?.avatarUrl} alt={user?.username} />
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-medium">{user?.name ?? "Admin"}</p>
+          <p className="truncate text-xs font-medium">{user?.username ?? "Admin"}</p>
           <p className="text-muted-foreground truncate text-[10px]">{user?.email}</p>
         </div>
       </div>

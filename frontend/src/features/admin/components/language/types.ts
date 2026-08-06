@@ -1,15 +1,9 @@
 export interface Language {
   id: number;
-
   name: string;
+  shortName: string;
+  fileExtension: string;
   version: string;
-
-  dockerImage: string;
-  sourceFile: string;
-
-  compileCommand: string | null;
-  runCommand: string;
-
-  isCompiled: boolean;
+  judge0LanguageId: number;
   enabled: boolean;
 }

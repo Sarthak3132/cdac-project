@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
+import { Checkbox } from "@/components/ui/checkbox";
 export interface TestCaseFormValues {
   inputData: string;
+  displayInput: string;
   expectedOutput: string;
+  explanation: string;
+  visible: boolean;
 }
 
 interface TestCaseFormProps {
@@ -21,7 +24,10 @@ interface TestCaseFormProps {
 
 const DEFAULT_VALUES: TestCaseFormValues = {
   inputData: "",
+  displayInput: "",
   expectedOutput: "",
+  explanation: "",
+  visible: true,
 };
 
 export function TestCaseForm({
@@ -48,20 +54,20 @@ export function TestCaseForm({
   }, [initialValues]);
 
   const validate = () => {
-    const next: Record<string, string> = {};
+  const next: Record<string, string> = {};
 
-    if (!values.inputData.trim()) {
-      next.inputData = "Input is required";
-    }
+  if (!values.inputData.trim()) {
+    next.inputData = "Input is required";
+  }
 
-    if (!values.expectedOutput.trim()) {
-      next.expectedOutput = "Expected output is required";
-    }
+  if (!values.expectedOutput.trim()) {
+    next.expectedOutput = "Expected output is required";
+  }
 
-    setErrors(next);
+  setErrors(next);
 
-    return Object.keys(next).length === 0;
-  };
+  return Object.keys(next).length === 0;
+};
 
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
@@ -103,6 +109,44 @@ export function TestCaseForm({
         )}
       </div>
 
+        <div className="space-y-2">
+  <Label htmlFor="displayInput">
+    Display Input
+  </Label>
+
+  <Textarea
+    id="displayInput"
+    rows={3}
+    value={values.displayInput}
+    onChange={(e) =>
+      setValues((prev) => ({
+        ...prev,
+        displayInput: e.target.value,
+      }))
+    }
+    placeholder="Optional display input shown to users..."
+  />
+</div>
+
+    <div className="space-y-2">
+  <Label htmlFor="explanation">
+    Explanation
+  </Label>
+
+  <Textarea
+    id="explanation"
+    rows={4}
+    value={values.explanation}
+    onChange={(e) =>
+      setValues((prev) => ({
+        ...prev,
+        explanation: e.target.value,
+      }))
+    }
+    placeholder="Optional explanation..."
+  />
+</div>
+
       <div className="space-y-2">
         <Label htmlFor="expectedOutput">
           Expected Output
@@ -127,6 +171,20 @@ export function TestCaseForm({
           </p>
         )}
       </div>
+
+        <div className="flex items-center gap-2">
+  <Checkbox
+    checked={values.visible}
+    onCheckedChange={(checked) =>
+      setValues((prev) => ({
+        ...prev,
+        visible: checked === true,
+      }))
+    }
+  />
+
+  <Label>Visible to Users</Label>
+</div>
 
       <div className="flex justify-end gap-2 pt-2">
         <Button

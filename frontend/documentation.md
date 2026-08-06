@@ -1,286 +1,441 @@
-# Frontend Project Documentation
+# Frontend Documentation
 
-## 1. Project Purpose
+This document describes the `frontend/` application structure, routing, layouts, feature modules, shared UI components, authentication flow, and integration points.
 
-This frontend is the client application for the coding platform. It provides:
+## Overview
 
-- onboarding and authentication for end users and administrators
-- protected user workflows for coding, problem browsing, submission review, and profile management
-- an admin view for dashboard and management features
-- an extendable structure for new pages, API interactions, and feature slices
-
-This document is intended for developers who will maintain, extend, or onboard onto the frontend codebase.
-
-## 2. Quick start
-
-### 2.1 Prerequisites
-
-- Node.js 18 or later
-- npm 9 or later
-- A code editor like VS Code
-- Backend API available and reachable via `VITE_API_URL`
-
-### 2.2 Install dependencies
-
-```bash
-npm install
-```
-
-### 2.3 Configure environment variables
-
-Create a `.env` file in the project root:
-
-```env
-VITE_API_URL=http://localhost:8000/api
-```
-
-Update the URL to match the backend environment used during development.
-
-### 2.4 Start the app locally
-
-```bash
-npm run dev
-```
-
-Open the local development URL shown by Vite, usually `http://localhost:5173`.
-
-### 2.5 Build for production
-
-```bash
-npm run build
-```
-
-### 2.6 Preview production output
-
-```bash
-npm run preview
-```
-
-### 2.7 Lint the app
-
-```bash
-npm run lint
-```
-
-## 3. Technology stack
-
+The frontend is a Vite-powered React application in `frontend/` built with:
 - React 19
 - TypeScript 6
-- Vite 8
-- Redux Toolkit
 - React Router DOM 7
-- Tailwind CSS 4
+- Redux Toolkit
 - Axios
-- shadcn UI utilities
-- Phosphor icons
+- Tailwind CSS 4
+- STOMP WebSocket client
+- A shadcn-style shared UI component suite
 
-## 4. Repository structure
+The app provides:
+- a public landing experience
+- authentication pages for login, registration, and password recovery
+- authenticated user workflows for compiling code, browsing problems, viewing problem details, and reviewing submissions
+- an admin panel for managing users, languages, problems, tags, test cases, and hints
 
-```
-frontend/
-├── public/
-├── src/
-│   ├── app/
-│   │   ├── router.tsx
-│   │   └── store.ts
-│   ├── components/
-│   │   ├── layouts/
-│   │   │   ├── admin-layout.tsx
-│   │   │   └── app-layout.tsx
-│   │   └── ui/
-│   ├── config/
-│   │   ├── app-config.ts
-│   │   └── env.ts
-│   ├── context/
-│   ├── features/
-│   │   └── auth/
-│   │       └── slice/authSlice.ts
-│   ├── hooks/
-│   ├── lib/
-│   ├── pages/
-│   │   ├── admin/
-│   │   ├── app/
-│   │   └── auth/
-│   ├── routes/
-│   ├── services/
-│   ├── types/
-│   ├── App.tsx
-│   └── main.tsx
-├── package.json
-├── tsconfig.json
-├── tsconfig.app.json
-├── tsconfig.node.json
-├── vite.config.ts
-└── doc.md
-```
+## Core App Entry
 
-## 5. Application architecture
+### `src/main.tsx`
+- Bootstraps the app using `ReactDOM.createRoot`.
+- Wraps the application in:
+  - `WebSocketProvider`
+  - Redux `Provider`
+  - `ThemeProvider`
+  - `BrowserRouter`
+- Renders the top-level `App` component.
 
-### 5.1 Entry point
+### `src/App.tsx`
+- Wraps routes with `TooltipProvider`.
+- Renders `AppRoutes` from `src/app/router.tsx`.
 
-- `src/main.tsx` is the application bootstrap.
-- It renders `<App />` inside `ReactDOM.createRoot`.
-- The app is wrapped with:
-  - `Provider` from Redux Toolkit
-  - `BrowserRouter` from React Router
+### `src/app/router.tsx`
+- Defines the complete route tree and route hierarchy.
+- Uses layout wrappers and authorization guards to organize public, user, and admin pages.
 
-### 5.2 Top-level app
+## Routing Structure
 
-- `src/App.tsx` is the top-level component.
-- It currently sets a dummy user object in `localStorage` for local development.
-- The component renders `AppRoutes`.
+### Route tree
 
-### 5.3 Route hierarchy
+Public routes:
+- `/` → `LandingPage`
+- `/login` → `Login`
+- `/register` → `Register`
+- `/forgot-password` → `ForgotPassword`
+- `/reset-password` → `ResetPassword`
 
-Routes are defined in `src/app/router.tsx`:
+Protected user routes:
+- `/app/compiler` → `CodeCompiler`
+- `/app/problems` → `ProblemSet`
+- `/app/problems/:id` → `ProblemDetail`
+- `/app/submission/:id` → `ProblemSubmission`
+- `/app/profile` → `Profile`
 
-- Public routes:
-  - `/`
-  - `/login`
-  - `/register`
-  - `/forgot-password`
-  - `/reset-password`
-- User routes under `AppLayout`:
-  - `/app`
-  - `/app/problems`
-  - `/app/problems/:id`
-  - `/app/submissions`
-  - `/app/profile`
-- Admin routes under `AdminLayout`:
-  - `/admin`
-- Fallback route:
-  - `*`
+Admin routes:
+- `/admin/dashboard` → `Dashboard`
+- `/admin/users` → `Users`
+- `/admin/languages` → `Languages`
+- `/admin/problems` → `Problems`
+- `/admin/problems/create` → `ProblemCreate`
+- `/admin/problems/update/:id` → `ProblemUpdate`
+- `/admin/tags` → `Tags`
+- `/admin/problem-examples` → `ProblemExamples`
+- `/admin/testcases` → `Testcases`
+- `/admin/hints` → `Hints`
 
-### 5.4 Route protection
+Catch-all:
+- `*` → `PageNotFound`
 
-Route guards are implemented in `src/routes/`:
+### Route wrappers and guards
 
-- `PublicRoutes` allows unauthenticated users in and redirects authenticated users to the correct area.
-- `UserRoutes` allows only authenticated users with `role === "USER"`.
-- `AdminRoutes` allows only authenticated users with `role === "ADMIN"`.
+The application uses nested route wrappers in `src/routes/`:
+- `PublicRoutes` redirects authenticated users from public pages to their appropriate app area.
+- `ProtectedRoutes` restores the current session by calling `/auth/me` and prevents unauthenticated access.
+- `UserRoutes` allows only normal user accounts to access `/app/*` pages.
+- `AdminRoutes` allows only admin users to access `/admin/*` pages.
 
-The guards use Redux state from `src/features/auth/slice/authSlice.ts`.
+## Layouts and Navigation
 
-### 5.5 Layout components
+### Layout wrappers
 
-- `src/components/layouts/app-layout.tsx` is the wrapper for user pages.
-- `src/components/layouts/admin-layout.tsx` is the wrapper for admin pages.
-- Both use `Outlet` from React Router to render child routes.
+- `src/components/layouts/public-layout.tsx`
+  - Uses `Navbar` with `variant="public"`.
+  - Wraps public pages.
 
-## 6. Authentication and state management
+- `src/components/layouts/app-layout.tsx`
+  - Uses `Navbar` with `variant="authenticated"`.
+  - Wraps authenticated user pages.
 
-### 6.1 Auth state
+- `src/components/layouts/admin-layout.tsx`
+  - Renders `AdminSidebar` on the left.
+  - Renders admin page content with `Outlet` on the right.
 
-The auth slice defines:
+### Navbar
 
-- `isAuthenticated`: boolean
-- `user`: object or `null`
+- `src/components/layouts/navbar/navbar.tsx`
+  - Handles both public and authenticated navigation.
+  - Displays login/register actions for public visitors.
+  - Displays a theme toggle, user dropdown, and mobile navigation for authenticated users.
+  - Uses `NavDesktop`, `NavMobile`, and `NavUserDropdown` components.
 
-`src/features/auth/slice/authSlice.ts` initializes state from `localStorage`.
+### Admin sidebar
 
-### 6.2 Local persistence
+- `src/features/admin/sidebar/admin-sidebar.tsx`
+  - Primary admin navigation panel.
+- `src/features/admin/sidebar/admin-sidebar-nav.tsx`
+  - Defines admin links for:
+    - `dashboard`
+    - `users`
+    - `languages`
+    - `problems`
+    - `tags`
+    - `problem-examples`
+    - `testcases`
+    - `hints`
 
-The auth reducer saves and removes the user in `localStorage`:
+## Authentication Flow
 
-- `login` stores the authenticated user.
-- `logout` clears the user.
+### Auth state
 
-### 6.3 Current placeholder behavior
+- `src/features/auth/slice/authSlice.ts`
+  - Manages authentication state with `login` and `logout` reducers.
+  - Stores:
+    - `isAuthenticated`
+    - `user`
+- `src/types/auth.ts`
+  - Defines `User`, `AuthState`, and `AuthLayoutProps`.
 
-`src/App.tsx` currently writes a fake user into `localStorage` on mount. This is only a development placeholder and should be removed when real authentication is wired.
+### Auth pages
 
-## 7. API and HTTP client
+- `src/features/auth/components/auth-wrapper.tsx`
+  - Shared card-based auth layout used by all auth forms.
+- `src/pages/auth/login.tsx`
+  - Sends credentials to `/auth/login`.
+  - Fetches profile data from `/auth/me` after login.
+  - Dispatches `login(user)` and redirects based on `user.role`.
+- `src/pages/auth/register.tsx`
+  - Sends registration requests to `/auth/register`.
+  - Redirects to `/login` on success.
+- `src/pages/auth/forgot-password.tsx`
+  - Dummy UI for requesting a password reset link.
+- `src/pages/auth/reset-password.tsx`
+  - Dummy UI for setting a new password.
 
-### 7.1 Axios setup
+### Session restoration
 
-`src/services/axios-interceptor.ts` exports an Axios instance configured with:
+- `ProtectedRoutes` calls `api.get("/auth/me")` when `isAuthenticated` is false.
+- If the API returns valid session data, it dispatches `login(res.data.data)`.
+- If the session cannot be restored, it redirects to `/login`.
 
-- `baseURL: import.meta.env.VITE_API_URL`
-- `withCredentials: true`
-- `Content-Type: application/json`
+## Feature Modules
 
-### 7.2 Environment variable
+### Code Compiler
 
-Add the backend URL in `.env`:
+- `src/pages/app/code-compiler.tsx`
+  - User-facing compiler page.
+- `src/features/code-compiler/components/language-sidebar.tsx`
+  - Selects compilation language.
+- `src/features/code-compiler/components/editor-panel.tsx`
+  - Presents the code editor.
+- `src/features/code-compiler/components/input-panel.tsx`
+  - Provides standard input editing.
+- `src/features/code-compiler/components/output-panel.tsx`
+  - Displays program output.
+- `src/features/code-compiler/slice/compilerSlice.ts`
+  - Stores compiler state.
+- `src/features/code-compiler/data/dummy-data.ts`
+  - Holds sample compiler metadata for development.
 
-```env
-VITE_API_URL=http://localhost:8000/api
-```
+### Problem browsing and details
 
-If backend authentication uses cookies or sessions, `withCredentials: true` supports those cookies.
+- `src/pages/app/problem-set.tsx`
+  - Problem list with search, filter, pagination, and tag sidebar.
+  - Queries `/problems` and `/tags`.
+- `src/features/problem-set/components/problem-filter.tsx`
+  - Search, level filter, and result count.
+- `src/features/problem-set/components/problem-table.tsx`
+  - Displays paginated problem rows.
+- `src/features/problem-set/components/stats-bar.tsx`
+  - Shows top-level progress statistics.
+- `src/features/problem-set/data/dummy-problems.ts`
+  - Sample problem data.
 
-## 8. Styling and UI
+- `src/pages/app/problem-detail.tsx`
+  - Problem details page with code editor, output view, and submission history.
+- `src/features/problem-detail/components/problem-panel.tsx`
+  - Renders problem description, tags, and metadata.
+- `src/features/problem-detail/components/editor-panel.tsx`
+  - Problem-specific code editor.
+- `src/features/problem-detail/components/output-panel.tsx`
+  - Shows compile and execution output.
+- `src/features/problem-detail/components/submissions-tab.tsx`
+  - Displays the problem's submissions list.
+- `src/features/problem-detail/slice/ProblemEditorSlice.tsx`
+  - Manages editor-related state.
+- `src/features/problem-detail/data/dummy-problem-details.ts`
+  - Example problem detail content.
 
-- `src/index.css` is the global stylesheet imported by `src/main.tsx`.
-- Tailwind CSS is used for styling.
-- `@fontsource-variable/jetbrains-mono` provides the JetBrains Mono font.
-- `@phosphor-icons/react` provides icon components.
-- shadcn and `tailwind-merge` are available for utility-based design.
+### Submission review
 
-## 9. Development guidelines
+- `src/pages/app/problem-submission.tsx`
+  - Detailed submission page by ID.
+- `src/features/submission/components/submission-header.tsx`
+  - Submission metadata header.
+- `src/features/submission/components/sourcecode-panel.tsx`
+  - Shows submitted source code.
+- `src/features/submission/components/submission-overview.tsx`
+  - Overview of verdict, runtime, and memory.
+- `src/features/submission/components/testcase-results.tsx`
+  - Renders test case pass/fail results.
+- `src/features/submission/data/dummy-submission.ts`
+  - Dummy submission data.
 
-### 9.1 Adding a new page
+### Profile
 
-1. Create a file in `src/pages/` or a nested folder.
-2. Add the route to `src/app/router.tsx`.
-3. Choose the correct guard:
-   - public: `PublicRoutes`
-   - user pages: `UserRoutes`
-   - admin pages: `AdminRoutes`
-4. Wrap authenticated pages with `AppLayout` or `AdminLayout`.
-5. Add navigation updates to the appropriate layout.
+- `src/pages/app/profile.tsx`
+  - Displays authenticated user profile information.
 
-### 9.2 Adding a feature state slice
+### Landing page
 
-1. Create a new slice in `src/features/<feature>/slice/`.
-2. Export actions and reducer from the slice.
-3. Register the reducer in `src/app/store.ts`.
-4. Use typed hooks or `useSelector` in components.
+- `src/pages/landing-page.tsx`
+  - Public marketing page.
+  - Includes hero, statistics, feature blocks, and example problem previews.
 
-### 9.3 Adding an API service
+### 404 page
 
-1. Create a service file in `src/services/` or `src/features/<feature>/api/`.
-2. Import the axios instance from `src/services/axios-interceptor.ts`.
-3. Keep API logic separate from UI components.
+- `src/pages/page-not-found.tsx`
+  - Rendered for unmatched route paths.
 
-### 9.4 Using shared UI / components
+## Admin Panel
 
-- Put reusable, presentational components in `src/components/ui/`.
-- Put layout components in `src/components/layouts/`.
-- Keep page-specific components inside the corresponding `src/pages/` folder.
+### Admin page views
 
-### 9.5 Naming conventions
+- `src/pages/admin/dashboard.tsx`
+  - Main admin dashboard placeholder.
+- `src/pages/admin/users.tsx`
+  - User management page.
+- `src/pages/admin/languages.tsx`
+  - Supported languages management.
+- `src/pages/admin/problems.tsx`
+  - Problem administration list.
+- `src/pages/admin/tags.tsx`
+  - Tag list and search.
+- `src/pages/admin/problem-examples.tsx`
+  - Problem example management.
+- `src/pages/admin/testcases.tsx`
+  - Problem test case management.
+- `src/pages/admin/hints.tsx`
+  - Problem hint management.
 
-- Files and folders: `kebab-case`.
-- React component files: `PascalCase` names with default exports.
-- Hooks: `useXyz.ts`.
-- Types and interfaces: `PascalCase` and stored in `src/types/`.
-- Redux slices: feature-based directories under `src/features`.
+### Admin feature components
 
-## 10. Troubleshooting
+Admin CRUD workflows are organized under `src/features/admin/components/`.
 
-### 10.1 Missing API URL
+#### Problems
+- `problem/problem-create.tsx`
+- `problem/problem-update.tsx`
+- `problem/problem-delete.tsx`
+- `problem/problem-form.tsx`
 
-If Vite fails with `undefined` for `VITE_API_URL`, verify that `.env` exists and the variable is correctly defined.
+#### Languages
+- `language/language-create.tsx`
+- `language/language-update.tsx`
+- `language/language-delete.tsx`
+- `language/language-form.tsx`
 
-### 10.2 Route redirect loops
+#### Tags
+- `tag/tag-create.tsx`
+- `tag/tag-update.tsx`
+- `tag/tag-delete.tsx`
+- `tag/types.ts`
 
-If login redirects keep firing, check:
+#### Problem examples
+- `problem-example/problem-example-create.tsx`
+- `problem-example/problem-example-update.tsx`
+- `problem-example/problem-example-delete.tsx`
+- `problem-example/problem-example-form.tsx`
 
-- `auth` state in Redux
-- `localStorage` user value
-- guard logic in `src/routes/*.tsx`
+#### Test cases
+- `testcase/testcase-create.tsx`
+- `testcase/testcase-update.tsx`
+- `testcase/testcase-delete.tsx`
 
-## 14. Onboarding checklist
+#### Hints
+- `hint/hint-create.tsx`
+- `hint/hint-update.tsx`
+- `hint/hint-delete.tsx`
 
-For a new developer joining the team:
+#### Users
+- `user/user-block-dialog.tsx`
+- `user/user-unblock-dialog.tsx`
+- `user/user-delete-dialog.tsx`
+- `user/types.ts`
 
-- run `npm install`
-- create `.env` with `VITE_API_URL`
-- run `npm run dev`
-- inspect `src/app/router.tsx` and `src/routes/`
-- inspect `src/features/auth/slice/authSlice.ts`
-- review placeholder auth setup in `src/App.tsx`
-- review the `src/pages/` folder to understand current screens
+## Shared UI Component Library
 
----
+The shared UI components live in `src/components/ui/` and provide reusable building blocks.
+
+Includes:
+- `alert-dialog.tsx`
+- `avatar.tsx`
+- `badge.tsx`
+- `button.tsx`
+- `card.tsx`
+- `checkbox.tsx`
+- `dialog.tsx`
+- `dropdown-menu.tsx`
+- `field.tsx`
+- `input.tsx`
+- `label.tsx`
+- `progress.tsx`
+- `resizable.tsx`
+- `scroll-area.tsx`
+- `select.tsx`
+- `separator.tsx`
+- `sheet.tsx`
+- `skeleton.tsx`
+- `sonner.tsx`
+- `spinner.tsx`
+- `switch.tsx`
+- `table.tsx`
+- `tabs.tsx`
+- `textarea.tsx`
+- `tooltip.tsx`
+
+These components are used by pages, dialogs, admin tables, form flows, and layout shells.
+
+## State Management
+
+### Redux store
+
+- `src/app/store.ts`
+  - Registers the `auth`, `compiler`, and `problemEditor` reducers.
+
+### Redux slices
+
+- `src/features/auth/slice/authSlice.ts`
+- `src/features/code-compiler/slice/compilerSlice.ts`
+- `src/features/problem-detail/slice/ProblemEditorSlice.tsx`
+
+## Network and API
+
+### Axios client
+
+- `src/services/axios-interceptor.ts`
+  - Creates an Axios instance with:
+    - `baseURL` from `VITE_API_URL`
+    - `withCredentials: true`
+  - Handles 401 responses by retrying with refresh token logic.
+  - Avoids retrying login/register/refresh requests.
+
+### Expected API endpoints
+
+The frontend references backend endpoints such as:
+- `/auth/login`
+- `/auth/register`
+- `/auth/logout`
+- `/auth/me`
+- `/auth/refresh`
+- `/problems`
+- `/problems/:id`
+- `/problems/:id/hints`
+- `/problems/:id/testcases`
+- `/tags`
+- `/languages`
+- `/admin/users`
+
+Admin pages also use entity-specific CRUD endpoints through dialog components.
+
+## Context and Providers
+
+- `src/app/websocket-provider.tsx`
+  - Configures a STOMP client using `VITE_WS_URL`.
+  - Activates the socket on mount and deactivates it on cleanup.
+  - Logs connection and error lifecycle events.
+
+- `src/context/theme-context.tsx`
+  - Persists `light` or `dark` theme in `localStorage`.
+  - Applies the theme by toggling classes on `document.documentElement`.
+
+- `src/hooks/use-theme.ts`
+  - Convenience hook for theme context.
+
+## Environment Variables
+
+The app uses environment variables from Vite:
+- `VITE_API_URL` — API base URL for Axios requests.
+- `VITE_WS_URL` — WebSocket base URL for STOMP.
+
+## Folder Structure
+
+- `src/app/` — router, store, and application-level providers.
+- `src/components/layouts/` — layout shells and navigation wrappers.
+- `src/components/ui/` — reusable UI primitives.
+- `src/config/` — configuration files.
+- `src/context/` — React context providers.
+- `src/features/` — feature modules organized by domain.
+- `src/hooks/` — custom hooks.
+- `src/lib/` — utility functions.
+- `src/pages/` — route page components.
+- `src/routes/` — route guard components and route composition.
+- `src/services/` — shared API and network clients.
+- `src/types/` — TypeScript definitions.
+
+## Developer Notes
+
+### Adding a new public route
+1. Add the page component in `src/pages/`.
+2. Add the route to `src/app/router.tsx` under `PublicRoutes`.
+3. Use `PublicLayout` for the public route wrapper.
+
+### Adding a new authenticated user route
+1. Add the page component in `src/pages/app/`.
+2. Add the route under `/app` in `src/app/router.tsx`.
+3. Wrap it with `UserRoutes` and `AppLayout`.
+
+### Adding a new admin route
+1. Add the page component in `src/pages/admin/`.
+2. Add the route under `/admin` in `src/app/router.tsx`.
+3. Wrap it with `AdminRoutes` and `AdminLayout`.
+4. Add a sidebar link in `src/features/admin/sidebar/admin-sidebar-nav.tsx` if needed.
+
+### Extending shared UI
+- Place new reusable UI components under `src/components/ui/`.
+- Keep shared logic and presentational details separate from page-specific code.
+
+### Extending Redux
+1. Create a slice in `src/features/<feature>/slice/`.
+2. Register it in `src/app/store.ts`.
+3. Use typed dispatch and selectors from `src/app/store.ts`.
+
+## Summary
+
+The frontend is structured to separate public content, authenticated user experiences, and admin functionality. The route hierarchy is explicit and guarded by role-based wrappers. Shared UI components and feature modules encourage reusable patterns and consistent styling.
+
+For any frontend update, start with `src/app/router.tsx` and the corresponding layout or guard in `src/routes/`.

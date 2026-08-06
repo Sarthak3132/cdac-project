@@ -37,9 +37,12 @@ export function UpdateTestCaseDialog({
 
     try {
       await api.put(`/problems/testcases/${testCase.id}`, {
-        inputData: values.inputData,
-        expectedOutput: values.expectedOutput,
-      });
+      inputData: values.inputData,
+      displayInput: values.displayInput || null,
+      expectedOutput: values.expectedOutput,
+      explanation: values.explanation || null,
+      visible: values.visible,
+    });
 
       toast.success("Test case updated successfully");
 
@@ -76,9 +79,12 @@ export function UpdateTestCaseDialog({
         <TestCaseForm
           mode="update"
           initialValues={{
-            inputData: testCase.inputData,
-            expectedOutput: testCase.expectedOutput,
-          }}
+  inputData: testCase.inputData,
+  displayInput: testCase.displayInput ?? "",
+  expectedOutput: testCase.expectedOutput,
+  explanation: testCase.explanation ?? "",
+  visible: true,
+}}
           isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
           onCancel={() => setOpen(false)}
