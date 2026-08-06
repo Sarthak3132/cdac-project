@@ -48,10 +48,17 @@ public class UserServiceImpl implements UserService {
                 log.warn("Username already taken: {}", request.getUsername());
                 throw new ConflictException("Username already taken");
             }
+            user.setUsername(request.getUsername());
         }
 
-        // Update fields
-        userMapper.updateUserFromRequest(request, user);
+        // Only update if not null
+        if (request.getBio() != null) {
+            user.setBio(request.getBio());
+        }
+
+        if (request.getProfileImageUrl() != null) {
+            user.setProfileImageUrl(request.getProfileImageUrl());
+        }
 
         log.info("User updated: {}", userId);
         return userRepository.save(user);

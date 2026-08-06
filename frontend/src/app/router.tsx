@@ -29,9 +29,10 @@ import ProblemUpdate from "@/features/admin/components/problem/problem-update";
 import ProtectedRoutes from "@/routes/protected-routes";
 
 export default function AppRoutes() {
+
   return (
+
     <Routes>
-      <Route path="*" element={<PageNotFound />} />
       {/* Public */}
       <Route element={<PublicRoutes />}>
         <Route element={<PublicLayout />}>
@@ -70,6 +71,7 @@ export default function AppRoutes() {
           </Route>
         </Route>
       </Route>
+      <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 }
