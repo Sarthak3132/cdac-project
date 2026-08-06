@@ -7,7 +7,6 @@ import type { AppDispatch } from "@/app/store"
 import { api } from "./services/axios-interceptor"
 
 export default function App() {
-<<<<<<< HEAD
   const dispatch = useDispatch<AppDispatch>()
   const [isInitialized, setIsInitialized] = useState(false)
 
@@ -31,8 +30,6 @@ export default function App() {
   if (!isInitialized) {
     return <div>Loading...</div>
   }
-=======
->>>>>>> 76220237217f2bfb86fe03cee68ddcbcf30adec6
 
   return (
     <div>
@@ -40,10 +37,5 @@ export default function App() {
         <AppRoutes />
       </TooltipProvider>
     </div>
-<<<<<<< HEAD
-  )
-}
-=======
   );
 }
->>>>>>> 76220237217f2bfb86fe03cee68ddcbcf30adec6

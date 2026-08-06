@@ -24,20 +24,12 @@ import Hints from "@/pages/admin/hints";
 import Users from "@/pages/admin/users";
 import Languages from "@/pages/admin/languages";
 import Tags from "@/pages/admin/tags";
-<<<<<<< HEAD
-import ProblemCreate from "@/features/admin/components/problem-create";
-import ProblemUpdate from "@/features/admin/components/problem-update";
-import { useEffect } from "react";
-=======
 import ProblemCreate from "@/features/admin/components/problem/problem-create";
 import ProblemUpdate from "@/features/admin/components/problem/problem-update";
 import ProtectedRoutes from "@/routes/protected-routes";
->>>>>>> 76220237217f2bfb86fe03cee68ddcbcf30adec6
 
 export default function AppRoutes() {
-  useEffect(() => {
-    console.log("Current pathname:", window.location.pathname);
-  }, []);
+
   return (
 
     <Routes>
