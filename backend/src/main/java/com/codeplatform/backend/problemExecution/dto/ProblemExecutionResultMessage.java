@@ -1,16 +1,14 @@
 package com.codeplatform.backend.problemExecution.dto;
-
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
-
 @Getter
 @Setter
 public class ProblemExecutionResultMessage {
-    String sessionId;
+    String referenceId;      // DB reference id — used to find/update the submission row
+    String websocketId;    // random UUID — used only as the STOMP destination
     String overallStatus;
     int passedCount;
     int totalCount;
-    List<TestCaseResultDto> results;
+    String compileError;
+    TestCaseResultDto failedTestCase;
 }

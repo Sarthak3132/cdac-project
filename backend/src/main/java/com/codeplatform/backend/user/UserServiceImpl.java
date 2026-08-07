@@ -60,7 +60,6 @@ public class UserServiceImpl implements UserService {
             user.setProfileImageUrl(request.getProfileImageUrl());
         }
 
-        log.info("User updated: {}", userId);
         return userRepository.save(user);
     }
 

@@ -8,7 +8,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -26,8 +26,8 @@ spring:
 
 logging:
   level:
-    com.codeplatform.backend: DEBUG
-    org.hibernate.SQL: DEBUG
+    root : INFO
+    com.codeplatform.backend: INFO
 app:
   jwt:
     secret: your-very-long-secret-key-min-256-bits

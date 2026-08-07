@@ -1,4 +1,4 @@
-package com.codeplatform.backend.problemExecution;
+package com.codeplatform.backend.submission;
 
 import com.codeplatform.backend.language.LanguageEntity;
 import com.codeplatform.backend.problem.ProblemEntity;

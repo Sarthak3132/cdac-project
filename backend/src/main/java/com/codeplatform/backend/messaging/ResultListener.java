@@ -1,9 +1,8 @@
 package com.codeplatform.backend.messaging;
-
 import com.codeplatform.backend.codeexecution.dto.CodeExecutionResultMessage;
 import com.codeplatform.backend.config.RabbitMQConfig;
-import com.codeplatform.backend.problemExecution.SubmissionRepository;
-import com.codeplatform.backend.problemExecution.SubmissionVerdict;
+import com.codeplatform.backend.submission.SubmissionRepository;
+import com.codeplatform.backend.submission.SubmissionVerdict;
 import com.codeplatform.backend.problemExecution.dto.ProblemExecutionResultMessage;
 import com.codeplatform.backend.problemExecution.dto.TestCaseResultDto;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +10,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -26,53 +23,43 @@ public class ResultListener {
         webSocketTemplate.convertAndSend("/topic/code-result/" + result.getSessionId(), result);
     }
 
-    @RabbitListener(queues = RabbitMQConfig.EXAMPLE_RESULT_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.PROBLEM_RESULT_QUEUE)
     public void onExampleResult(ProblemExecutionResultMessage result) {
-        webSocketTemplate.convertAndSend("/topic/example-result/" + result.getSessionId(), result);
+        // RUN mode: no DB row, sessionId and websocketId are the same disposable UUID
+        webSocketTemplate.convertAndSend("/topic/problem-run-result/" + result.getWebsocketId(), result);
     }
 
     @RabbitListener(queues = RabbitMQConfig.SUBMISSION_RESULT_QUEUE)
     @Transactional
     public void onSubmissionResult(ProblemExecutionResultMessage result) {
-
-        Long submissionId = Long.valueOf(result.getSessionId());
-
+        Long submissionId = Long.valueOf(result.getReferenceId());
         submissionRepository.findById(submissionId).ifPresent(submission -> {
-
             submission.setVerdict(mapVerdict(result.getOverallStatus()));
             submission.setPassedTestcases(result.getPassedCount());
-
-            result.getResults().stream()
-                    .map(TestCaseResultDto::getTime)
-                    .filter(Objects::nonNull)
-                    .max(Double::compareTo)
-                    .ifPresent(t -> submission.setCpuTimeMs((int) Math.round(t * 1000)));
-
-            result.getResults().stream()
-                    .map(TestCaseResultDto::getMemory)
-                    .filter(Objects::nonNull)
-                    .max(Integer::compareTo)
-                    .ifPresent(submission::setMemoryUsageKb);
-
-            result.getResults().stream()
-                    .filter(r -> !r.isPassed())
-                    .findFirst()
-                    .ifPresent(failing -> {
-                        submission.setFailureInput(failing.getInputData());
-                        submission.setExpectedOutput(failing.getExpectedOutput());
-                        submission.setActualOutput(failing.getActualOutput());
-                        submission.setDiagnosticMessage(
-                                failing.getStderr() != null
-                                        ? failing.getStderr()
-                                        : failing.getStatusDescription()
-                        );
-                    });
-
+            // the worker now sends at most ONE test case: the first one that failed
+            // (or null if everything passed, or null on a compile error)
+            TestCaseResultDto failed = result.getFailedTestCase();
+            if (failed != null) {
+                if (failed.getTime() != null) {
+                    submission.setCpuTimeMs((int) Math.round(failed.getTime() * 1000));
+                }
+                submission.setMemoryUsageKb(failed.getMemory());
+                submission.setFailureInput(failed.getInputData());
+                submission.setExpectedOutput(failed.getExpectedOutput());
+                submission.setActualOutput(failed.getActualOutput());
+                submission.setDiagnosticMessage(
+                        failed.getStderr() != null ? failed.getStderr() : failed.getStatusDescription()
+                );
+            }
+            if (result.getCompileError() != null) {
+                submission.setDiagnosticMessage(result.getCompileError());
+            }
             submissionRepository.save(submission);
         });
 
+        // broadcast on the private websocket id, NOT the DB primary key
         webSocketTemplate.convertAndSend(
-                "/topic/submission-result/" + result.getSessionId(),
+                "/topic/submission-result/" + result.getWebsocketId(),
                 result
         );
     }
