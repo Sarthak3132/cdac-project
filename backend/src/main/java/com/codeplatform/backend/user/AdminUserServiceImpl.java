@@ -43,7 +43,6 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setLockUntil(Instant.now().plus(30, ChronoUnit.DAYS));
 
         UserEntity savedUser = userRepository.save(user);
-        log.info("User blocked: {}", userId);
 
         return userMapper.toManagementResponse(savedUser);
     }
@@ -63,7 +62,6 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setLockUntil(null);
 
         UserEntity savedUser = userRepository.save(user);
-        log.info("User unblocked: {}", userId);
 
         return userMapper.toManagementResponse(savedUser);
     }
@@ -88,6 +86,5 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setDeletedAt(Instant.now());
         userRepository.save(user);
 
-        log.info("User soft deleted: {}", userId);
     }
 }

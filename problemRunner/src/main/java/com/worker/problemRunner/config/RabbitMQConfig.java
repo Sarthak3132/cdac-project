@@ -13,8 +13,8 @@ public class RabbitMQConfig {
 
     public static final String EXCHANGE = "worker.exchange";
 
-    public static final String EXAMPLE_RUN_QUEUE = "problem.run.queue";
-    public static final String EXAMPLE_RESULT_QUEUE = "problem.result.run.queue";
+    public static final String PROBLEM_RUN_QUEUE = "problem.run.queue";
+    public static final String PROBLEM_RESULT_QUEUE = "problem.result.run.queue";
 
 
     @Bean

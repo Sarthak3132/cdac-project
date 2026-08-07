@@ -20,12 +20,12 @@ public class RabbitMQConfig {
 
     // Request queues (Backend -> Workers)
     public static final String CODE_RUN_QUEUE = "code.run.queue";
-    public static final String EXAMPLE_RUN_QUEUE = "problem.run.queue";
+    public static final String PROBLEM_RUN_QUEUE = "problem.run.queue";
     public static final String SUBMISSION_QUEUE = "problem.submit.queue";
 
     // Result queues (Workers -> Backend)
     public static final String CODE_RESULT_QUEUE = "code.result.queue";
-    public static final String EXAMPLE_RESULT_QUEUE = "problem.result.run.queue";
+    public static final String PROBLEM_RESULT_QUEUE = "problem.result.run.queue";
     public static final String SUBMISSION_RESULT_QUEUE = "problem.submit.result.queue";
 
     @Bean
@@ -41,7 +41,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue exampleRunQueue() {
-        return QueueBuilder.durable(EXAMPLE_RUN_QUEUE).build();
+        return QueueBuilder.durable(PROBLEM_RUN_QUEUE).build();
     }
 
     @Bean
@@ -57,7 +57,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue exampleResultQueue() {
-        return QueueBuilder.durable(EXAMPLE_RESULT_QUEUE).build();
+        return QueueBuilder.durable(PROBLEM_RESULT_QUEUE).build();
     }
 
     @Bean
@@ -73,7 +73,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding exampleRunBinding(Queue exampleRunQueue, TopicExchange compilerExchange) {
-        return BindingBuilder.bind(exampleRunQueue).to(compilerExchange).with(EXAMPLE_RUN_QUEUE);
+        return BindingBuilder.bind(exampleRunQueue).to(compilerExchange).with(PROBLEM_RUN_QUEUE);
     }
 
     @Bean
@@ -88,7 +88,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding exampleResultBinding(Queue exampleResultQueue, TopicExchange compilerExchange) {
-        return BindingBuilder.bind(exampleResultQueue).to(compilerExchange).with(EXAMPLE_RESULT_QUEUE);
+        return BindingBuilder.bind(exampleResultQueue).to(compilerExchange).with(PROBLEM_RESULT_QUEUE);
     }
 
     @Bean

@@ -10,4 +10,8 @@ spring:
     password: cp_pass
 
 judge0:
-  base-url: http://13.203.77.52:2358
+  base-url: http://13.234.30.137:2358
+
+logging:
+  level:
+    com.worker.problemSubmit : WARN

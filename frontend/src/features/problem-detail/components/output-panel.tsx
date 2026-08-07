@@ -49,31 +49,39 @@ export function OutputPanel({ mode, isExecuting, result, error }: OutputPanelPro
             </p>
           )}
 
-          {/* Run Result */}
-          {!isExecuting && !error && result && mode === "run" && (
+          {!isExecuting && !error && result && (
             <div className="space-y-4">
-              {result.results.map((tc, index) => (
-                <div key={tc.testCaseId} className="rounded-lg border p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-xs font-semibold">Test Case {index + 1}</span>
+              <p className="text-base font-semibold">
+                {result.passedCount} / {result.totalCount} test cases passed
+              </p>
 
-                    {tc.passed ? (
-                      <span className="flex items-center gap-1 text-xs text-green-600">
-                        <CheckCircle2 className="h-4 w-4" />
-                        Passed
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-xs text-red-500">
-                        <XCircle className="h-4 w-4" />
-                        {tc.statusDescription}
-                      </span>
-                    )}
+              {/* Compilation error — code never ran, nothing else to show */}
+              {result.compileError && (
+                <div className="space-y-2 rounded-lg border p-4">
+                  <div className="flex items-center gap-2 font-semibold text-red-500">
+                    <XCircle className="h-4 w-4" />
+                    Compilation Error
+                  </div>
+                  <pre className="bg-muted rounded p-2 whitespace-pre-wrap text-red-500">
+                    {result.compileError}
+                  </pre>
+                </div>
+              )}
+
+              {/* One failing test case — same layout LeetCode uses when a submission fails */}
+              {!result.compileError && result.failedTestCase && (
+                <div className="space-y-4 rounded-lg border p-4">
+                  <div className="flex items-center gap-2 font-semibold text-red-500">
+                    <XCircle className="h-4 w-4" />
+                    {result.failedTestCase.statusDescription}
                   </div>
 
-                  {tc.inputData && (
-                    <div className="mb-4">
+                  {result.failedTestCase.inputData && (
+                    <div>
                       <p className="text-muted-foreground mb-1 text-xs">Input</p>
-                      <pre className="bg-muted rounded p-2 whitespace-pre-wrap">{tc.inputData}</pre>
+                      <pre className="bg-muted rounded p-2 whitespace-pre-wrap">
+                        {result.failedTestCase.inputData}
+                      </pre>
                     </div>
                   )}
 
@@ -81,73 +89,29 @@ export function OutputPanel({ mode, isExecuting, result, error }: OutputPanelPro
                     <div>
                       <p className="text-muted-foreground mb-1 text-xs">Expected Output</p>
                       <pre className="bg-muted rounded p-2 whitespace-pre-wrap">
-                        {tc.expectedOutput}
+                        {result.failedTestCase.expectedOutput}
                       </pre>
                     </div>
 
                     <div>
                       <p className="text-muted-foreground mb-1 text-xs">Your Output</p>
-                      <pre
-                        className={`bg-muted rounded p-2 whitespace-pre-wrap ${
-                          tc.passed ? "" : "text-red-500"
-                        }`}
-                      >
-                        {tc.actualOutput || tc.stderr || "(no output)"}
+                      <pre className="bg-muted rounded p-2 whitespace-pre-wrap text-red-500">
+                        {result.failedTestCase.actualOutput ||
+                          result.failedTestCase.stderr ||
+                          "(no output)"}
                       </pre>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              )}
 
-          {/* Submit Result */}
-          {!isExecuting && !error && result && mode === "submit" && (
-            <div className="space-y-4">
-              <p className="text-base font-semibold">
-                {result.passedCount} / {result.totalCount} test cases passed
-              </p>
-
-              {result.overallStatus !== "Accepted" &&
-                (() => {
-                  const failing = result.results.find((r) => !r.passed);
-
-                  if (!failing) return null;
-
-                  return (
-                    <div className="space-y-4 rounded-lg border p-4">
-                      <div className="flex items-center gap-2 font-semibold text-red-500">
-                        <XCircle className="h-4 w-4" />
-                        {failing.statusDescription}
-                      </div>
-
-                      {failing.inputData && (
-                        <div>
-                          <p className="text-muted-foreground mb-1 text-xs">Input</p>
-                          <pre className="bg-muted rounded p-2 whitespace-pre-wrap">
-                            {failing.inputData}
-                          </pre>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-muted-foreground mb-1 text-xs">Expected Output</p>
-                          <pre className="bg-muted rounded p-2 whitespace-pre-wrap">
-                            {failing.expectedOutput}
-                          </pre>
-                        </div>
-
-                        <div>
-                          <p className="text-muted-foreground mb-1 text-xs">Your Output</p>
-                          <pre className="bg-muted rounded p-2 whitespace-pre-wrap text-red-500">
-                            {failing.actualOutput || failing.stderr || "(no output)"}
-                          </pre>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
+              {/* Everything passed */}
+              {!result.compileError && !result.failedTestCase && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle2 className="h-4 w-4" />
+                  All test cases passed
+                </div>
+              )}
             </div>
           )}
         </div>

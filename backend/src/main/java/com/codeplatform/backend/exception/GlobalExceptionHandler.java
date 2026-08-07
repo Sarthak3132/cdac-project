@@ -13,10 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.stream.Collectors;
 
-/**
- * Single place where every exception is translated into the same
- * ErrorResponse shape, regardless of where or how it was thrown.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -78,5 +74,68 @@ public class GlobalExceptionHandler {
                         "Something went wrong. Please try again later.",
                         request.getRequestURI()
                 ));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(
+            BadRequestException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(
+            ConflictException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(LanguageNotFound.class)
+    public ResponseEntity<ErrorResponse> handleLanguageNotFound(
+            LanguageNotFound ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(ProblemNotFound.class)
+    public ResponseEntity<ErrorResponse> handleProblemNotFound(
+            ProblemNotFound ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(ProblemTemplateNotFound.class)
+    public ResponseEntity<ErrorResponse> handleProblemTemplateNotFound(
+            ProblemTemplateNotFound ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(TestCaseNotFound.class)
+    public ResponseEntity<ErrorResponse> handleTestCaseNotFound(
+            TestCaseNotFound ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(ErrorResponse.of(ex.getMessage(), request.getRequestURI()));
     }
 }

@@ -1,4 +1,4 @@
-package com.codeplatform.backend.problemExecution;
+package com.codeplatform.backend.submission;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

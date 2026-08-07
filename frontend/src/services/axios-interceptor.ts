@@ -5,49 +5,48 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-let refreshPromise: Promise<any> | null = null;
+let refreshPromise: Promise<void> | null = null;
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const request = error.config;
 
-    if (!originalRequest) {
+    if (!request) {
       return Promise.reject(error);
     }
 
-    const url = originalRequest.url ?? "";
+    const url = request.url || "";
 
-    // Never try to refresh login/register/refresh requests
+    // Don't refresh auth requests
     if (
       url.includes("/auth/login") ||
       url.includes("/auth/register") ||
-      url.includes("/auth/refresh")
+      url.includes("/auth/refresh") ||
+      url.includes("/auth/logout")
     ) {
       return Promise.reject(error);
     }
 
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    // Only handle 401
+    if (error.response?.status !== 401 || request._retry) {
       return Promise.reject(error);
     }
 
-    originalRequest._retry = true;
+    request._retry = true;
 
     try {
       if (!refreshPromise) {
-        refreshPromise = api.post("/auth/refresh");
+        refreshPromise = api.post("/auth/refresh").then(() => {});
       }
 
       await refreshPromise;
-      refreshPromise = null;
 
-      // Retry the original request
-      return api(originalRequest);
+      return api(request);
     } catch (err) {
-      refreshPromise = null;
-
-      // Let the caller (ProtectedRoutes) handle redirecting
       return Promise.reject(err);
+    } finally {
+      refreshPromise = null;
     }
   },
 );

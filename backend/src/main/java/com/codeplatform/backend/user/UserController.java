@@ -29,10 +29,6 @@ public class UserController {
             @AuthenticationPrincipal UserContext user
     ) {
 
-        System.out.println("principal = " + user);
-        System.out.println("principal id = " + (user != null ? user.getId() : null));
-
-
         UserEntity userEntity = userService.getUserById(user.getId());
         UserResponse response = userMapper.toResponse(userEntity);
         return ResponseEntity.ok(SuccessResponse.of("User profile fetched", response));

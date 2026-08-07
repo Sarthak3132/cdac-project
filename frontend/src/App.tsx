@@ -1,41 +1,39 @@
-import { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
-import AppRoutes from "./app/router"
-import { TooltipProvider } from "./components/ui/tooltip"
-import { login } from "@/features/auth/slice/authSlice"
-import type { AppDispatch } from "@/app/store"
-import { api } from "./services/axios-interceptor"
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+
+import AppRoutes from "./app/router";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { login } from "@/features/auth/slice/authSlice";
+import type { AppDispatch } from "@/app/store";
+import { api } from "./services/axios-interceptor";
 
 export default function App() {
-  const dispatch = useDispatch<AppDispatch>()
-  const [isInitialized, setIsInitialized] = useState(false)
+  const dispatch = useDispatch<AppDispatch>();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const response = await api.get("/auth/me")
-        const user = response.data.data
-        dispatch(login(user))
-      } catch (err) {
-        // User not logged in
+        const response = await api.get("/auth/me");
+
+        dispatch(login(response.data.data));
+      } catch (error) {
+        console.error("Session restoration failed:", error);
       } finally {
-        setIsInitialized(true)
+        setIsInitialized(true);
       }
-    }
+    };
 
-    restoreSession()
-  }, [dispatch])
+    restoreSession();
+  }, [dispatch]);
 
-  // Don't render routes until session is restored
   if (!isInitialized) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   return (
-    <div>
-      <TooltipProvider>
-        <AppRoutes />
-      </TooltipProvider>
-    </div>
+    <TooltipProvider>
+      <AppRoutes />
+    </TooltipProvider>
   );
 }

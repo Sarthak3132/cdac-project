@@ -1,5 +1,6 @@
 package com.codeplatform.backend.problemExecution;
 
+import com.codeplatform.backend.common.AppConstants;
 import com.codeplatform.backend.common.SuccessResponse;
 import com.codeplatform.backend.problemExecution.dto.CodeRunResponseDto;
 import com.codeplatform.backend.problemExecution.dto.ProblemExecutionRequestDto;
@@ -14,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/compiler/problem")
+@RequestMapping(AppConstants.PROBLEM)
 @RequiredArgsConstructor
 @Slf4j
 public class ProblemExecutionController {
@@ -37,19 +38,16 @@ public class ProblemExecutionController {
             @PathVariable Long problemId,
             @Valid @RequestBody ProblemExecutionRequestDto dto) {
 
-        log.info("Submit endpoint hit | problemId={} languageId={} sourceLength={}",
-                problemId, dto.languageId(), dto.sourceCode() != null ? dto.sourceCode().length() : 0);
+
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         UserContext userContext = (UserContext) auth.getPrincipal();
         UserEntity currentUser = userContext.userEntity();
 
-        log.info("Resolved currentUser | id={}", currentUser.getId());
 
         String sessionId = service.submitFull(problemId, dto, currentUser);
 
-        log.info("submitFull returned sessionId={}", sessionId);
 
         return ResponseEntity.accepted().body(
                 new SuccessResponse<>("Submitted for judging against all test cases", new CodeRunResponseDto(sessionId))

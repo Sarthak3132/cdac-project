@@ -11,7 +11,3 @@ server:
 jwt:
   secret: your-very-long-secret-key-here
   expiration: 86400000
-
-logging:
-  level:
-    root: INFO
