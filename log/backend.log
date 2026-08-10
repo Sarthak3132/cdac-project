@@ -1,0 +1,12 @@
+2026-08-10T16:29:51.698+05:30  INFO 9140 --- [backend] [ntContainer#0-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-08-10T16:29:51.704+05:30  INFO 9140 --- [backend] [ntContainer#2-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-08-10T16:29:51.709+05:30  INFO 9140 --- [backend] [ntContainer#3-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-08-10T16:29:51.997+05:30  INFO 9140 --- [backend] [ntContainer#1-2] o.s.a.r.l.SimpleMessageListenerContainer : Successfully waited for workers to finish.
+2026-08-10T16:29:51.999+05:30  INFO 9140 --- [backend] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-10T16:29:52.003+05:30  INFO 9140 --- [backend] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-08-10T16:29:52.008+05:30  INFO 9140 --- [backend] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
+2026-08-10T16:29:52.009+05:30  INFO 9140 --- [backend] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@31d635ba]]
+2026-08-10T16:29:52.009+05:30  INFO 9140 --- [backend] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
+2026-08-10T16:29:52.026+05:30  INFO 9140 --- [backend] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-10T16:29:52.129+05:30  INFO 9140 --- [backend] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-10T16:29:52.133+05:30  INFO 9140 --- [backend] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

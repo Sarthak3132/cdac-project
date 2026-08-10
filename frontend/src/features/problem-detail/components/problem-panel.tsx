@@ -154,7 +154,7 @@ export function ProblemPanel({
 
         {/* Submissions Tab */}
         <TabsContent value="submissions" className="mt-0 flex-1 overflow-hidden">
-          <SubmissionsTab />
+          <SubmissionsTab problemId={problem.id} />
         </TabsContent>
       </Tabs>
     </div>

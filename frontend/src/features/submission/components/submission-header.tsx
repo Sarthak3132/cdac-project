@@ -1,10 +1,10 @@
-// features/submission/components/SubmissionHeader.tsx
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { Submission, SubmissionStatus } from "@/types/submissions";
+import { VERDICT_TO_STATUS } from "@/types/submissions";
+import type { SubmissionVerdict, SubmissionStatus } from "@/types/submissions";
 
 const STATUS_STYLES: Record<SubmissionStatus, string> = {
   Accepted: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -16,35 +16,31 @@ const STATUS_STYLES: Record<SubmissionStatus, string> = {
 };
 
 interface SubmissionHeaderProps {
-  id: Submission["id"];
-  status: Submission["status"];
+  id: number;
+  verdict: SubmissionVerdict;
 }
 
-export function SubmissionHeader({ id, status }: SubmissionHeaderProps) {
+export function SubmissionHeader({ id, verdict }: SubmissionHeaderProps) {
   const navigate = useNavigate();
+  const status = verdict === "PENDING" ? null : VERDICT_TO_STATUS[verdict];
 
   return (
     <header className="border-border bg-background flex shrink-0 items-center gap-3 border-b px-4 py-2.5">
       <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
+        variant="ghost" size="sm" onClick={() => navigate(-1)}
         className="text-muted-foreground hover:text-foreground -ml-1 h-8 gap-1.5 px-2 text-xs"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to Problem
       </Button>
-
       <Separator orientation="vertical" className="h-4" />
-
-      <span className="text-muted-foreground font-mono text-xs">{id}</span>
-
+      <span className="text-muted-foreground font-mono text-xs">#{id}</span>
       <div className="ml-auto">
         <Badge
           variant="outline"
-          className={`text-xs font-semibold ${STATUS_STYLES[status]}`}
+          className={`text-xs font-semibold ${status ? STATUS_STYLES[status] : "bg-muted text-muted-foreground"}`}
         >
-          {status}
+          {status ?? "Pending"}
         </Badge>
       </div>
     </header>
