@@ -133,9 +133,13 @@ export function EditorPanel({
         setIsExecuting(false);
         subscription.unsubscribe();
       }, EXECUTION_TIMEOUT_MS);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setExecutionError("Failed to submit code for execution.");
+      if (err?.response?.status === 429) {
+        setExecutionError("Too many requests. Please try again later.");
+      } else {
+        setExecutionError("Failed to submit code for execution.");
+      }
       setIsExecuting(false);
     }
   };

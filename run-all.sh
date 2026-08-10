@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_DIR="$HOME/cdac-project"
+PROJECT_DIR="$HOME/projects/cdac-project"
 LOG_DIR="$PROJECT_DIR/log"
 PID_FILE="$PROJECT_DIR/cdac-services.pid"
 
@@ -10,67 +10,196 @@ echo "======================================"
 echo " Starting CDAC Project"
 echo "======================================"
 
-# Clear old PID file
-> "$PID_FILE"
+# --------------------------------------------------
+# Stop existing services if PID file exists
+# --------------------------------------------------
 
-# Backend
-echo "Starting Backend..."
-cd "$PROJECT_DIR/backend"
-mvn spring-boot:run >> "$LOG_DIR/backend.log" 2>&1 &
-echo $! >> "$PID_FILE"
+if [ -f "$PID_FILE" ]; then
+    echo "Checking for existing services..."
 
-# Code Runner
-echo "Starting Code Runner..."
-cd "$PROJECT_DIR/codeRunner"
-mvn spring-boot:run >> "$LOG_DIR/codeRunner.log" 2>&1 &
-echo $! >> "$PID_FILE"
+    while read -r PID SERVICE; do
+        if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+            echo "Stopping existing $SERVICE (PID: $PID)..."
+            kill "$PID" 2>/dev/null
+        fi
+    done < "$PID_FILE"
 
-# Problem Runner
-echo "Starting Problem Runner..."
-cd "$PROJECT_DIR/problemRunner"
-mvn spring-boot:run >> "$LOG_DIR/problemRunner.log" 2>&1 &
-echo $! >> "$PID_FILE"
+    sleep 2
 
-# Problem Submit
-echo "Starting Problem Submit..."
-cd "$PROJECT_DIR/problemSubmit"
-mvn spring-boot:run >> "$LOG_DIR/problemSubmit.log" 2>&1 &
-echo $! >> "$PID_FILE"
+    # Force kill anything still running
+    while read -r PID SERVICE; do
+        if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+            echo "Force stopping $SERVICE (PID: $PID)..."
+            kill -9 "$PID" 2>/dev/null
+        fi
+    done < "$PID_FILE"
 
-# Frontend
-echo "Starting Frontend..."
-cd "$PROJECT_DIR/frontend"
-npm run dev >> "$LOG_DIR/frontend.log" 2>&1 &
-echo $! >> "$PID_FILE"
-
-# AI Worker
-echo "Starting AI Worker..."
-cd "$PROJECT_DIR/ai-worker"
-
-source .venv/bin/activate 2>/dev/null
-
-if command -v python3 >/dev/null 2>&1; then
-    python3 main.py >> "$LOG_DIR/ai-worker.log" 2>&1 &
-    echo $! >> "$PID_FILE"
-elif command -v python >/dev/null 2>&1; then
-    python main.py >> "$LOG_DIR/ai-worker.log" 2>&1 &
-    echo $! >> "$PID_FILE"
-else
-    echo "Python is not installed!"
+    rm -f "$PID_FILE"
 fi
 
+touch "$PID_FILE"
+
+
+# --------------------------------------------------
+# Helper function
+# --------------------------------------------------
+
+start_service() {
+    local NAME="$1"
+    local DIR="$2"
+    local COMMAND="$3"
+    local LOG="$4"
+
+    echo "Starting $NAME..."
+
+    cd "$DIR" || {
+        echo "ERROR: Could not enter $DIR"
+        return 1
+    }
+
+    nohup bash -c "$COMMAND" >> "$LOG" 2>&1 &
+
+    local PID=$!
+
+    echo "$PID $NAME" >> "$PID_FILE"
+
+    echo "  $NAME started (PID: $PID)"
+}
+
+
+# --------------------------------------------------
+# Backend
+# --------------------------------------------------
+
+start_service \
+    "Backend" \
+    "$PROJECT_DIR/backend" \
+    "mvn spring-boot:run" \
+    "$LOG_DIR/backend.log"
+
+
+# --------------------------------------------------
+# Code Runner
+# --------------------------------------------------
+
+start_service \
+    "Code Runner" \
+    "$PROJECT_DIR/codeRunner" \
+    "mvn spring-boot:run" \
+    "$LOG_DIR/codeRunner.log"
+
+
+# --------------------------------------------------
+# Problem Runner
+# --------------------------------------------------
+
+start_service \
+    "Problem Runner" \
+    "$PROJECT_DIR/problemRunner" \
+    "mvn spring-boot:run" \
+    "$LOG_DIR/problemRunner.log"
+
+
+# --------------------------------------------------
+# Problem Submit
+# --------------------------------------------------
+
+start_service \
+    "Problem Submit" \
+    "$PROJECT_DIR/problemSubmit" \
+    "mvn spring-boot:run" \
+    "$LOG_DIR/problemSubmit.log"
+
+
+# --------------------------------------------------
+# Frontend
+# --------------------------------------------------
+
+start_service \
+    "Frontend" \
+    "$PROJECT_DIR/frontend" \
+    "npm run dev" \
+    "$LOG_DIR/frontend.log"
+
+
+# --------------------------------------------------
+# AI Worker
+# --------------------------------------------------
+
+echo "Starting AI Worker..."
+
+cd "$PROJECT_DIR/ai-worker" || {
+    echo "ERROR: Could not enter AI worker directory"
+} 
+
+if [ -f "$PROJECT_DIR/ai-worker/.venv/bin/python" ]; then
+
+    nohup "$PROJECT_DIR/ai-worker/.venv/bin/python" main.py \
+        >> "$LOG_DIR/ai-worker.log" 2>&1 &
+
+    AI_PID=$!
+
+    echo "$AI_PID AI-Worker" >> "$PID_FILE"
+
+    echo "  AI Worker started (PID: $AI_PID)"
+
+elif command -v python3 >/dev/null 2>&1; then
+
+    nohup python3 main.py \
+        >> "$LOG_DIR/ai-worker.log" 2>&1 &
+
+    AI_PID=$!
+
+    echo "$AI_PID AI-Worker" >> "$PID_FILE"
+
+    echo "  AI Worker started (PID: $AI_PID)"
+
+elif command -v python >/dev/null 2>&1; then
+
+    nohup python main.py \
+        >> "$LOG_DIR/ai-worker.log" 2>&1 &
+
+    AI_PID=$!
+
+    echo "$AI_PID AI-Worker" >> "$PID_FILE"
+
+    echo "  AI Worker started (PID: $AI_PID)"
+
+else
+
+    echo "ERROR: Python is not installed!"
+
+fi
+
+
+# --------------------------------------------------
+# Done
+# --------------------------------------------------
+
 echo ""
+
 echo "======================================"
-echo " All services started in background"
+echo " All services started"
 echo "======================================"
+
 echo ""
-echo "Logs are continuously written to:"
-echo "  Backend        -> log/backend.log"
-echo "  Code Runner    -> log/codeRunner.log"
-echo "  Problem Runner -> log/problemRunner.log"
-echo "  Problem Submit -> log/problemSubmit.log"
-echo "  Frontend       -> log/frontend.log"
-echo "  AI Worker      -> log/ai-worker.log"
+echo "Logs:"
+echo "  Backend        -> $LOG_DIR/backend.log"
+echo "  Code Runner    -> $LOG_DIR/codeRunner.log"
+echo "  Problem Runner -> $LOG_DIR/problemRunner.log"
+echo "  Problem Submit -> $LOG_DIR/problemSubmit.log"
+echo "  Frontend       -> $LOG_DIR/frontend.log"
+echo "  AI Worker      -> $LOG_DIR/ai-worker.log"
+
 echo ""
-echo "PID file -> cdac-services.pid"
+echo "PID file:"
+echo "  $PID_FILE"
+
+echo ""
+echo "To check processes:"
+echo "  cat $PID_FILE"
+echo ""
+echo "To stop everything:"
+echo "  ./stop.sh"
+
 echo "======================================"
