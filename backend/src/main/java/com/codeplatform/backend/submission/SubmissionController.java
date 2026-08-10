@@ -4,6 +4,7 @@ import com.codeplatform.backend.common.AppConstants;
 import com.codeplatform.backend.submission.dto.SubmissionDetailDTO;
 import com.codeplatform.backend.submission.dto.SubmissionListItemDTO;
 import com.codeplatform.backend.user.UserEntity;
+import com.codeplatform.backend.security.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,18 +21,18 @@ public class SubmissionController {
     @GetMapping("/problems/{problemId}")
     public List<SubmissionListItemDTO> getSubmissionsForProblem(
             @PathVariable Long problemId,
-            @AuthenticationPrincipal UserEntity currentUser) {
+            @AuthenticationPrincipal UserContext user) {
 
-        System.out.println("Fetching submissions for problem ID: " + problemId + " for user ID: " + currentUser.getId());
-        return submissionService.getSubmissionsForProblem(currentUser.getId(), problemId);
+        System.out.println("Fetching submissions for problem ID: " + problemId + " for user ID: " + user.getId());
+        return submissionService.getSubmissionsForProblem(user.getId(), problemId);
     }
 
     @GetMapping("/{id}")
     public SubmissionDetailDTO getSubmissionDetail(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserEntity currentUser) {
+            @AuthenticationPrincipal UserContext user) {
 
-        System.out.println("Fetching submission detail for submission ID: " + id + " for user ID: " + currentUser.getId());
-        return submissionService.getSubmissionDetail(currentUser.getId(), id);
+        System.out.println("Fetching submission detail for submission ID: " + id + " for user ID: " + user.getId());
+        return submissionService.getSubmissionDetail(user.getId(), id);
     }
 }
