@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_DIR="$HOME/cdac-project"
+PROJECT_DIR="$HOME/projects/cdac-project"
 LOG_DIR="$PROJECT_DIR/log"
 PID_FILE="$PROJECT_DIR/cdac-services.pid"
 

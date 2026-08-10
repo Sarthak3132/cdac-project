@@ -27,11 +27,10 @@ import Tags from "@/pages/admin/tags";
 import ProblemCreate from "@/features/admin/components/problem/problem-create";
 import ProblemUpdate from "@/features/admin/components/problem/problem-update";
 import ProtectedRoutes from "@/routes/protected-routes";
+import ProblemTemplate from "@/pages/admin/problem-template";
 
 export default function AppRoutes() {
-
   return (
-
     <Routes>
       {/* Public */}
       <Route element={<PublicRoutes />}>
@@ -65,7 +64,11 @@ export default function AppRoutes() {
             <Route path="problems/create" element={<ProblemCreate />} />
             <Route path="problems/update/:id" element={<ProblemUpdate />} />
             <Route path="tags" element={<Tags />} />
-            <Route path="problem-examples" element={<ProblemExamples />} />
+            {/* <Route path="problem-examples" element={<ProblemExamples />} /> */}
+            <Route
+              path="problem-templates/:problemId/:problemTitle"
+              element={<ProblemTemplate />}
+            />
             <Route path="testcases" element={<Testcases />} />
             <Route path="hints" element={<Hints />} />
           </Route>

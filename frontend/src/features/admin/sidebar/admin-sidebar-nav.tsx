@@ -20,7 +20,6 @@ const NAV_ITEMS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
   { id: "languages", label: "Languages", icon: Languages },
   { id: "problems", label: "Problems", icon: Code2 },
   { id: "tags", label: "Tags", icon: Tags },
-  { id: "problem-examples", label: "Problem Examples", icon: FileText },
   { id: "testcases", label: "Test Cases", icon: FlaskConical },
   { id: "hints", label: "Hints", icon: Lightbulb },
 ];

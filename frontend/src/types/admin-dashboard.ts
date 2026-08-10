@@ -44,6 +44,5 @@ export type AdminTab =
   | "languages"
   | "problems"
   | "tags"
-  | "problem-examples"
   | "testcases"
   | "hints";
