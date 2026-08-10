@@ -28,6 +28,30 @@ public class RabbitMQConfig {
     public static final String PROBLEM_RESULT_QUEUE = "problem.result.run.queue";
     public static final String SUBMISSION_RESULT_QUEUE = "problem.submit.result.queue";
 
+    public static final String AI_REQUEST_QUEUE = "ai.request.queue";
+    public static final String AI_RESULT_QUEUE = "ai.result.queue";
+
+    @Bean
+    public Queue aiRequestQueue() {
+        return QueueBuilder.durable(AI_REQUEST_QUEUE).build();
+    }
+
+    @Bean
+    public Queue aiResultQueue() {
+        return QueueBuilder.durable(AI_RESULT_QUEUE).build();
+    }
+
+    @Bean
+    public Binding aiRequestBinding(Queue aiRequestQueue, TopicExchange compilerExchange) {
+        return BindingBuilder.bind(aiRequestQueue).to(compilerExchange).with(AI_REQUEST_QUEUE);
+    }
+
+    @Bean
+    public Binding aiResultBinding(Queue aiResultQueue, TopicExchange compilerExchange) {
+        return BindingBuilder.bind(aiResultQueue).to(compilerExchange).with(AI_RESULT_QUEUE);
+    }
+
+
     @Bean
     public TopicExchange compilerExchange() {
         return new TopicExchange(EXCHANGE, true, false);

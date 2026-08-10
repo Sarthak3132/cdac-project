@@ -1,6 +1,8 @@
 package com.codeplatform.backend.messaging;
 import com.codeplatform.backend.codeexecution.dto.CodeExecutionResultMessage;
 import com.codeplatform.backend.config.RabbitMQConfig;
+import com.codeplatform.backend.pythonAi.dto.AiRequestType;
+import com.codeplatform.backend.pythonAi.dto.AiResultMessage;
 import com.codeplatform.backend.submission.SubmissionRepository;
 import com.codeplatform.backend.submission.SubmissionVerdict;
 import com.codeplatform.backend.problemExecution.dto.ProblemExecutionResultMessage;
@@ -21,6 +23,14 @@ public class ResultListener {
     @RabbitListener(queues = RabbitMQConfig.CODE_RESULT_QUEUE)
     public void onCodeResult(CodeExecutionResultMessage result) {
         webSocketTemplate.convertAndSend("/topic/code-result/" + result.getSessionId(), result);
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.AI_RESULT_QUEUE)
+    public void onAiResult(AiResultMessage result) {
+        String topic = result.getType() == AiRequestType.COMPLEXITY
+                ? "/topic/ai-complexity-result/"
+                : "/topic/ai-chat-result/";
+        webSocketTemplate.convertAndSend(topic + result.getSessionId(), result);
     }
 
     @RabbitListener(queues = RabbitMQConfig.PROBLEM_RESULT_QUEUE)
