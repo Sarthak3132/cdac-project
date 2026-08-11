@@ -8,8 +8,8 @@ RUN npm ci
 
 COPY . .
 
-ENV VITE_API_URL=http://localhost:8080/api/v1
-ENV VITE_WS_URL=ws://localhost:8080
+ENV VITE_API_URL=http://13.234.30.137:8080/api/v1
+ENV VITE_WS_URL=ws://13.234.30.137:8080
 
 RUN npm run build
 
