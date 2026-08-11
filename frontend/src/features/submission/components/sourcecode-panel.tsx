@@ -2,7 +2,7 @@
 import { FileCode2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Editor } from "@monaco-editor/react";
-import type { Submission } from "@/types/submissions";
+import type { SubmissionDetail } from "@/types/submissions";
 import { useTheme } from "@/hooks/use-theme";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -30,8 +30,8 @@ const LANGUAGE_MONACO: Record<string, string> = {
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface SourceCodePanelProps {
-  sourceCode: Submission["sourceCode"];
-  language: Submission["language"];
+  sourceCode: SubmissionDetail["codeBody"];
+  language: SubmissionDetail["language"];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ export function SourceCodePanel({ sourceCode, language }: SourceCodePanelProps) 
   const monacoLang = LANGUAGE_MONACO[language] ?? "plaintext";
   const languageLabel = LANGUAGE_LABELS[language] ?? language;
 
-  const themeContext = useTheme()
+  const themeContext = useTheme();
 
   return (
     <div className="flex w-1/2 min-w-0 flex-col">

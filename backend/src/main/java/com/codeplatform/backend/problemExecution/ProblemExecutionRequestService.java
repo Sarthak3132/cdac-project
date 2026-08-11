@@ -10,6 +10,8 @@ import com.codeplatform.backend.problemExecution.dto.ProblemExecutionMessage;
 import com.codeplatform.backend.problemExecution.dto.ProblemExecutionRequestDto;
 import com.codeplatform.backend.problemExecution.dto.TestCaseDto;
 import com.codeplatform.backend.problemtemplate.ProblemTemplateRepository;
+import com.codeplatform.backend.submission.SubmissionEntity;
+import com.codeplatform.backend.submission.SubmissionRepository;
 import com.codeplatform.backend.testcase.TestCaseEntity;
 import com.codeplatform.backend.testcase.TestCaseRepository;
 import com.codeplatform.backend.user.UserEntity;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -35,6 +38,8 @@ public class ProblemExecutionRequestService {
 
     private static final String USER_CODE_PLACEHOLDER = "{{USER_CODE}}";
 
+    // RUN has no DB row, so the websocket id and the reference id are the
+    // same disposable UUID — nothing to look up later.
     public String submitRun(Long problemId, ProblemExecutionRequestDto dto) {
         ProblemEntity problem = getProblem(problemId);
         LanguageEntity language = resolveLanguage(dto.languageId());
@@ -49,34 +54,31 @@ public class ProblemExecutionRequestService {
             throw new BadRequestException("No visible test cases available for this problem");
         }
 
-        String sessionId = UUID.randomUUID().toString();
+        String websocketId = UUID.randomUUID().toString();
 
-        publish(sessionId, fullSourceCode, language.getJudge0LanguageId(), visibleTestCases,
-                "RUN", problem, RabbitMQConfig.EXAMPLE_RUN_QUEUE);
+        publish(websocketId, websocketId, fullSourceCode, language.getJudge0LanguageId(), visibleTestCases,
+                "RUN", problem, RabbitMQConfig.PROBLEM_RUN_QUEUE);
 
-        return sessionId;
+        return websocketId;
     }
 
-    // Persists a row first, uses its own DB id as the sessionId — so the
-    // submission worker's result can be matched straight back to the row via ID.
+    // Persists a row first. referenceId (DB id) is how the worker matches
+    // its result back to this row; it is never exposed to the client.
+    // websocketId is a separate random UUID — only the caller and the
+    // worker know it, and it's what the frontend subscribes to over STOMP.
     @Transactional
     public String submitFull(Long problemId, ProblemExecutionRequestDto dto, UserEntity currentUser) {
-        log.info("submitFull started | problemId={} userId={}", problemId, currentUser != null ? currentUser.getId() : "NULL");
 
         ProblemEntity problem = getProblem(problemId);
-        log.info("Problem resolved | id={} title={}", problem.getId(), problem.getTitle());
 
         LanguageEntity language = resolveLanguage(dto.languageId());
-        log.info("Language resolved | id={} judge0LanguageId={}", language.getId(), language.getJudge0LanguageId());
 
         String fullSourceCode = assembleSourceCode(problem, language, dto.sourceCode());
-        log.info("Source assembled | length={}", fullSourceCode.length());
 
         List<TestCaseDto> allTestCases = testCaseRepository.findByProblemId(problemId)
                 .stream()
                 .map(this::toDto)
                 .toList();
-        log.info("Test cases fetched | count={}", allTestCases.size());
 
         if (allTestCases.isEmpty()) {
             throw new BadRequestException("No test cases configured for this problem");
@@ -91,17 +93,16 @@ public class ProblemExecutionRequestService {
                 .build();
 
         submission = submissionRepository.save(submission);
-        log.info("Submission row saved | id={}", submission.getId());
 
-        String sessionId = submission.getId().toString();
+        String referenceId = submission.getId().toString();
+        String websocketId = UUID.randomUUID().toString();
 
-        publish(sessionId, fullSourceCode, language.getJudge0LanguageId(), allTestCases,
+        publish(referenceId, websocketId, fullSourceCode, language.getJudge0LanguageId(), allTestCases,
                 "SUBMIT", problem, RabbitMQConfig.SUBMISSION_QUEUE);
 
-        log.info("Published to submission queue | sessionId={}", sessionId);
-
-        return sessionId;
+        return websocketId;
     }
+
     private ProblemEntity getProblem(Long problemId) {
         return problemRepository.findById(problemId)
                 .orElseThrow(() -> new BadRequestException("Problem not found"));
@@ -123,11 +124,11 @@ public class ProblemExecutionRequestService {
         return new TestCaseDto(tc.getId().toString(), tc.getInputData(), tc.getExpectedOutput());
     }
 
-    private void publish(String sessionId, String sourceCode, Integer judge0LanguageId,
+    private void publish(String referenceId, String websocketId, String sourceCode, Integer judge0LanguageId,
                          List<TestCaseDto> testCases, String mode, ProblemEntity problem, String queue) {
 
         ProblemExecutionMessage message = new ProblemExecutionMessage(
-                sessionId, sourceCode, judge0LanguageId, testCases, mode,
+                referenceId, websocketId, sourceCode, judge0LanguageId, testCases, mode,
                 problem.getTimeLimitMs(), problem.getMemoryLimitKb()
         );
 

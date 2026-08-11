@@ -2,6 +2,7 @@ package com.codeplatform.backend.codeexecution;
 
 import com.codeplatform.backend.codeexecution.dto.CodeRunRequestDto;
 import com.codeplatform.backend.codeexecution.dto.CodeRunResponseDto;
+import com.codeplatform.backend.common.AppConstants;
 import com.codeplatform.backend.common.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/compiler")
+@RequestMapping(AppConstants.CODE_RUN)
 
 @RequiredArgsConstructor
 public class CodeExecutionController {

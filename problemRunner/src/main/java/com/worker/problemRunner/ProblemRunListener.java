@@ -1,5 +1,6 @@
 package com.worker.problemRunner;
 
+import com.worker.problemRunner.Dtos.*;
 import com.worker.problemRunner.config.RabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,13 +16,13 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import com.worker.problemRunner.Dtos.*;
-
-
 @Component
 public class ProblemRunListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProblemRunListener.class);
+    private static final int POLL_INTERVAL_MS = 500;
+    private static final int MAX_POLL_ATTEMPTS = 30;
+    private static final String BATCH_FIELDS = "stdout,stderr,compile_output,status,time,memory";
 
     private final RabbitTemplate rabbitTemplate;
     private final WebClient judge0;
@@ -31,97 +32,187 @@ public class ProblemRunListener {
         this.judge0 = WebClient.builder().baseUrl(judge0BaseUrl).build();
     }
 
-    @RabbitListener(queues = RabbitMQConfig.EXAMPLE_RUN_QUEUE)
-    public void handle(Dtos.ProblemExecutionMessage msg) {
-        log.info("Received RUN request | sessionId={} testCaseCount={}",
-                msg.sessionId(), msg.testCases().size());
+    @RabbitListener(queues = RabbitMQConfig.PROBLEM_RUN_QUEUE)
+    public void handle(ProblemExecutionMessage msg) {
+        log.info("Received RUN request | referenceId={} websocketId={} testCaseCount={}",
+                msg.referenceId(), msg.websocketId(), msg.testCases().size());
 
-        System.out.println(msg.sourceCode());
-
-        List<TestCaseResultDto> results = new ArrayList<>();
         int passedCount = 0;
         String overallStatus = "Accepted";
+        String compileErrorMessage = null;
+        TestCaseResultDto failedTestCase = null;
 
-        for (TestCaseDto testCase : msg.testCases()) {
-            TestCaseResultDto result = runSingleTestCase(msg, testCase);
-            results.add(result);
+        try {
+            List<TestCaseDto> testCases = msg.testCases();
+            TestCaseDto firstTestCase = testCases.get(0);
 
-            if (result.passed()) {
-                passedCount++;
-            } else if (overallStatus.equals("Accepted")) {
-                overallStatus = result.statusDescription();
-            }
+            TestCaseResultDto firstResult = runSingleTestCase(msg, firstTestCase);
 
-            if ("Compilation Error".equals(result.statusDescription())) {
+            if ("Compilation Error".equals(firstResult.statusDescription())) {
+                compileErrorMessage = firstResult.stderr();
                 overallStatus = "Compilation Error";
-                break; // no point running remaining visible test cases after a compile failure
+
+            } else if (!firstResult.passed()) {
+                failedTestCase = firstResult;
+                overallStatus = firstResult.statusDescription();
+
+            } else {
+                passedCount = 1;
+
+                if (testCases.size() > 1) {
+                    List<TestCaseDto> remaining = testCases.subList(1, testCases.size());
+                    List<String> tokens = submitAllTestCases(msg, remaining);
+                    List<Judge0Result> judge0Results = waitForResults(tokens);
+
+                    for (int i = 0; i < remaining.size(); i++) {
+                        TestCaseResultDto result = buildResult(remaining.get(i), judge0Results.get(i));
+
+                        if (result.passed()) {
+                            passedCount++;
+                        } else if (failedTestCase == null) {
+                            failedTestCase = result;
+                            overallStatus = result.statusDescription();
+                        }
+                    }
+                }
             }
+
+        } catch (Exception e) {
+            log.error("Run execution failed | referenceId={} error={}", msg.referenceId(), e.getMessage(), e);
+            overallStatus = "Runtime Error";
+            passedCount = 0;
+            failedTestCase = new TestCaseResultDto(
+                    null, null, false, null, null,
+                    "Execution error: " + e.getMessage(), "Runtime Error", null, null
+            );
         }
 
         ProblemExecutionResultMessage resultMessage = new ProblemExecutionResultMessage(
-                msg.sessionId(), overallStatus, passedCount, msg.testCases().size(), results
+                msg.referenceId(), msg.websocketId(), overallStatus, passedCount, msg.testCases().size(),
+                compileErrorMessage, failedTestCase
         );
 
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.EXAMPLE_RESULT_QUEUE, resultMessage);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.PROBLEM_RESULT_QUEUE, resultMessage);
 
-        log.info("Published RUN result | sessionId={} verdict={} passed={}/{}",
-                msg.sessionId(), overallStatus, passedCount, msg.testCases().size());
+        log.info("Published RUN result | referenceId={} websocketId={} verdict={} passed={}/{}",
+                msg.referenceId(), msg.websocketId(), overallStatus, passedCount, msg.testCases().size());
     }
 
     private TestCaseResultDto runSingleTestCase(ProblemExecutionMessage msg, TestCaseDto testCase) {
-        try {
-            Judge0Request req = new Judge0Request(
-                    encode(msg.sourceCode()), msg.judge0LanguageId(),
+        Judge0Request request = new Judge0Request(
+                encode(msg.sourceCode()),
+                msg.judge0LanguageId(),
+                testCase.inputData() != null ? encode(testCase.inputData()) : null,
+                msg.timeLimitMs() != null ? msg.timeLimitMs() / 1000.0 : null,
+                msg.memoryLimitKb()
+        );
+
+        Judge0Result r = judge0.post()
+                .uri("/submissions?base64_encoded=true&wait=true")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Judge0Result.class)
+                .block(Duration.ofSeconds(15));
+
+        return buildResult(testCase, r);
+    }
+
+    private List<String> submitAllTestCases(ProblemExecutionMessage msg, List<TestCaseDto> testCases) {
+        List<Judge0Request> submissions = new ArrayList<>();
+
+        for (TestCaseDto testCase : testCases) {
+            Judge0Request request = new Judge0Request(
+                    encode(msg.sourceCode()),
+                    msg.judge0LanguageId(),
                     testCase.inputData() != null ? encode(testCase.inputData()) : null,
                     msg.timeLimitMs() != null ? msg.timeLimitMs() / 1000.0 : null,
                     msg.memoryLimitKb()
             );
+            submissions.add(request);
+        }
 
-            Judge0Result r = judge0.post()
-                    .uri("/submissions?base64_encoded=true&wait=true")
-                    .bodyValue(req)
+        return judge0.post()
+                .uri("/submissions/batch?base64_encoded=true")
+                .bodyValue(new Judge0BatchRequest(submissions))
+                .retrieve()
+                .bodyToFlux(Judge0BatchToken.class)
+                .map(Judge0BatchToken::token)
+                .collectList()
+                .block(Duration.ofSeconds(15));
+    }
+
+    private List<Judge0Result> waitForResults(List<String> tokens) throws InterruptedException {
+        String tokenParam = String.join(",", tokens);
+        String uri = "/submissions/batch?tokens=" + tokenParam + "&base64_encoded=true&fields=" + BATCH_FIELDS;
+
+        for (int attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
+            Judge0BatchResultResponse response = judge0.get()
+                    .uri(uri)
                     .retrieve()
-                    .bodyToMono(Judge0Result.class)
+                    .bodyToMono(Judge0BatchResultResponse.class)
                     .block(Duration.ofSeconds(15));
 
-            System.out.println(r);
-            System.out.println("stdout = " + r.stdout());
-            System.out.println("stderr = " + r.stderr());
-            System.out.println("compile = " + r.compile_output());
+            List<Judge0Result> submissions = response.submissions();
 
-            if (r.error() != null) {
-                throw new RuntimeException("Judge0 error: " + r.error());
+            boolean anyStillRunning = false;
+            for (Judge0Result r : submissions) {
+                if (r.status() == null || r.status().id() <= 2) {
+                    anyStillRunning = true;
+                    break;
+                }
             }
 
-            String statusDescription = r.status() != null ? r.status().description() : "Unknown";
-            String actualOutput = decode(r.stdout());
+            if (!anyStillRunning) {
+                return submissions;
+            }
 
-            boolean compileError = r.compile_output() != null && !r.compile_output().isBlank();
-            boolean passed = !compileError
-                    && r.stderr() == null
-                    && actualOutput != null
-                    && normalize(actualOutput).equals(normalize(testCase.expectedOutput()));
+            Thread.sleep(POLL_INTERVAL_MS);
+        }
 
-            return new TestCaseResultDto(
-                    testCase.testCaseId(),
-                    testCase.inputData(),
-                    passed,
-                    actualOutput,
-                    testCase.expectedOutput(),
-                    decode(r.stderr()),
-                    compileError ? "Compilation Error" : (passed ? "Accepted" : deriveFailureStatus(statusDescription, r.stderr())),
-                    r.time() != null ? Double.parseDouble(r.time()) : null,
-                    r.memory()
-            );
-        } catch (Exception e) {
-            log.error("Test case execution failed | sessionId={} testCaseId={} error={}",
-                    msg.sessionId(), testCase.testCaseId(), e.getMessage(), e);
+        throw new RuntimeException("Judge0 batch polling timed out after " + MAX_POLL_ATTEMPTS + " attempts");
+    }
 
+    private TestCaseResultDto buildResult(TestCaseDto testCase, Judge0Result r) {
+        if (r.error() != null) {
             return new TestCaseResultDto(
                     testCase.testCaseId(), testCase.inputData(), false, null, testCase.expectedOutput(),
-                    "Execution error: " + e.getMessage(), "Runtime Error", null, null
+                    "Judge0 error: " + r.error(), "Runtime Error", null, null
             );
         }
+
+        String statusDescription = r.status() != null ? r.status().description() : "Unknown";
+        String actualOutput = decode(r.stdout());
+
+        boolean compileError = r.compile_output() != null && !r.compile_output().isBlank();
+        boolean passed = !compileError
+                && r.stderr() == null
+                && actualOutput != null
+                && normalize(actualOutput).equals(normalize(testCase.expectedOutput()));
+
+        String finalStatus;
+        String errorText;
+        if (compileError) {
+            finalStatus = "Compilation Error";
+            errorText = decode(r.compile_output());
+        } else if (passed) {
+            finalStatus = "Accepted";
+            errorText = decode(r.stderr());
+        } else {
+            finalStatus = deriveFailureStatus(statusDescription, r.stderr());
+            errorText = decode(r.stderr());
+        }
+
+        return new TestCaseResultDto(
+                testCase.testCaseId(),
+                testCase.inputData(),
+                passed,
+                actualOutput,
+                testCase.expectedOutput(),
+                errorText,
+                finalStatus,
+                r.time() != null ? Double.parseDouble(r.time()) : null,
+                r.memory()
+        );
     }
 
     private String deriveFailureStatus(String judge0Status, String stderr) {

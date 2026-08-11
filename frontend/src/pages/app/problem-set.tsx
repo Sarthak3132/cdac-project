@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Trophy, Flame, Circle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,8 @@ type Tags = {
 };
 
 export default function ProblemSet() {
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [level, setLevel] = useState("All");
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -151,6 +154,16 @@ export default function ProblemSet() {
               ))}
             </CardContent>
           </Card>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start gap-2"
+            onClick={() => navigate("/app/leaderboard")}
+          >
+            <Trophy className="h-4 w-4 text-yellow-500" />
+            View Leaderboard
+          </Button>
 
           <Separator />
 

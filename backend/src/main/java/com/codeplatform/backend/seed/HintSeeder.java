@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-@Profile("dev")
+@Profile("prod")
 @Slf4j
 @Order(4)
 public class HintSeeder implements CommandLineRunner {

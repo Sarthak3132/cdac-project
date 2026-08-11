@@ -44,7 +44,12 @@ export interface ProblemExecutionResult {
   overallStatus: string;
   passedCount: number;
   totalCount: number;
-  results: TestCaseResult[];
+  // present only when the code failed to compile — no test cases ran at all
+  compileError: string | null;
+  // the FIRST test case that failed (LeetCode-style: we don't get a full list
+  // anymore, just the one that broke it — or null if everything passed / it
+  // was a compile error)
+  failedTestCase: TestCaseResult | null;
 }
 
 const EXECUTION_TIMEOUT_MS = 20000;
@@ -107,16 +112,17 @@ export function EditorPanel({
     setExecutionError(null);
 
     try {
-      const response = await api.post(`/compiler/problem/${problemId}/${endpoint}`, {
+      const response = await api.post(`/problems/${problemId}/${endpoint}`, {
         sourceCode: code,
         languageId: template.languageId,
       });
 
       const sessionId: string = response.data.data.sessionId;
-      const topic = endpoint === "run" ? "example-result" : "submission-result";
+      const topic = endpoint === "run" ? "problem-run-result" : "submission-result";
 
       const subscription = socket.subscribe(`/topic/${topic}/${sessionId}`, (message) => {
         const result: ProblemExecutionResult = JSON.parse(message.body);
+        console.log(`Received ${endpoint} result for session ${sessionId}:`, result);
         setExecutionResult(result);
         setIsExecuting(false);
         clearTimeout(timeout);
@@ -127,9 +133,13 @@ export function EditorPanel({
         setIsExecuting(false);
         subscription.unsubscribe();
       }, EXECUTION_TIMEOUT_MS);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setExecutionError("Failed to submit code for execution.");
+      if (err?.response?.status === 429) {
+        setExecutionError("Too many requests. Please try again later.");
+      } else {
+        setExecutionError("Failed to submit code for execution.");
+      }
       setIsExecuting(false);
     }
   };

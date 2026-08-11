@@ -53,7 +53,6 @@ public class ProblemTemplateController {
     public ResponseEntity<SuccessResponse<List<ProblemTemplateResponse>>> getTemplatesByProblem(
             @PathVariable Long problemId
     ) {
-        log.info(String.valueOf(problemId));
         List<ProblemTemplateResponse> response = problemTemplateService.getTemplatesByProblem(problemId);
         return ResponseEntity.ok(
                 SuccessResponse.of("Teproblemmplates fetched successfully", response)

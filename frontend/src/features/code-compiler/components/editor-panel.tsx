@@ -1,24 +1,21 @@
-"use client";
-
 import { useTheme } from "@/hooks/use-theme";
 import Editor from "@monaco-editor/react";
 
-export function EditorPanel({
-  language,
-  value,
-  onChange,
-}: {
+interface EditorPanelProps {
   language: string;
   value: string;
   onChange: (v: string | undefined) => void;
-}) {
-  console.log("EditorPanel rendered with language:", language, "and value:", value);
+  height?: string;
+}
+
+export function EditorPanel({ language, value, onChange, height = "100%" }: EditorPanelProps) {
   const themecontext = useTheme();
+
   return (
     <Editor
-      height="100%"
+      height={height}
       theme={themecontext.theme === "dark" ? "vs-dark" : "light"}
-      language={language.toLocaleLowerCase()}
+      language={language.toLowerCase()}
       value={value}
       onChange={onChange}
       options={{

@@ -11,26 +11,20 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
 
   rabbitmq:
     host: ${RABBIT_HOST}
-    port: 5672
+    port: ${RABBIT_PORT:5672}
     username: ${RABBIT_USER}
     password: ${RABBIT_PASS}
-
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: 6379
+    virtual-host: ${RABBIT_VHOST:/}
 
 logging:
   level:
     root: ERROR
     com.codeplatform.backend: INFO
-
-app:
-  jwt:
-    secret: ${JWT_SECRET}
-    expiration: ${JWT_EXPIRATION}

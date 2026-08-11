@@ -10,4 +10,6 @@ public class  AppConstants {
     public static final String LANGUAGE = API_VERSION + "/languages";
     public static final String HINT = API_VERSION + "/hints";
     public static final String PROBLEM_TEMPLATE = API_VERSION + "/problem-templates";
+    public static final String CODE_RUN = API_VERSION + "/compiler";
+    public static final String SUBMISSION=API_VERSION+"/submissions";
 }

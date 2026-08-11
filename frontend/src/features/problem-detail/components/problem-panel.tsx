@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SubmissionsTab } from "./submissions-tab";
+import { AiPanel } from "./ai-panel";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   Easy: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -24,7 +25,6 @@ export function ProblemPanel({
   testCases: TestCase[];
   hints: ProblemHints[];
 }) {
-  console.log(hints);
   const navigate = useNavigate();
   return (
     <div className="flex h-full flex-col">
@@ -41,13 +41,13 @@ export function ProblemPanel({
           </Button>
 
           <TabsList className="h-11 gap-1 bg-transparent p-0">
-            {["problem", "hints", "submissions"].map((tab) => (
+            {["problem", "hints", "ai", "submissions"].map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
                 className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent bg-transparent px-3 pt-2 pb-2 capitalize data-[state=active]:shadow-none"
               >
-                {tab}
+                {tab === "ai" ? "AI Help" : tab}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -147,9 +147,14 @@ export function ProblemPanel({
           </ScrollArea>
         </TabsContent>
 
+        {/* AI Tab */}
+        <TabsContent value="ai" className="mt-0 flex-1 overflow-hidden">
+          <AiPanel problem={problem} />
+        </TabsContent>
+
         {/* Submissions Tab */}
         <TabsContent value="submissions" className="mt-0 flex-1 overflow-hidden">
-          <SubmissionsTab />
+          <SubmissionsTab problemId={problem.id} />
         </TabsContent>
       </Tabs>
     </div>

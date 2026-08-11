@@ -18,6 +18,7 @@ import LandingPage from "@/pages/landing-page";
 import PageNotFound from "@/pages/page-not-found";
 import Dashboard from "@/pages/admin/dashboard";
 import Problems from "@/pages/admin/problems";
+import Leaderboard from "@/pages/app/leaderboard";
 import Testcases from "@/pages/admin/testcases";
 import Hints from "@/pages/admin/hints";
 import Users from "@/pages/admin/users";
@@ -26,11 +27,10 @@ import Tags from "@/pages/admin/tags";
 import ProblemCreate from "@/features/admin/components/problem/problem-create";
 import ProblemUpdate from "@/features/admin/components/problem/problem-update";
 import ProtectedRoutes from "@/routes/protected-routes";
+import ProblemTemplate from "@/pages/admin/problem-template";
 
 export default function AppRoutes() {
-
   return (
-
     <Routes>
       {/* Public */}
       <Route element={<PublicRoutes />}>
@@ -52,6 +52,7 @@ export default function AppRoutes() {
             <Route path="/app/problems/:id" element={<ProblemDetail />} />
             <Route path="/app/submission/:id" element={<ProblemSubmission />} />
             <Route path="/app/profile" element={<Profile />} />
+            <Route path="/app/leaderboard" element={<Leaderboard />} />
           </Route>
         </Route>
         {/* Admin */}
@@ -64,6 +65,10 @@ export default function AppRoutes() {
             <Route path="problems/create" element={<ProblemCreate />} />
             <Route path="problems/update/:id" element={<ProblemUpdate />} />
             <Route path="tags" element={<Tags />} />
+            <Route
+              path="problem-templates/:problemId/:problemTitle"
+              element={<ProblemTemplate />}
+            />
             <Route path="testcases" element={<Testcases />} />
             <Route path="hints" element={<Hints />} />
           </Route>

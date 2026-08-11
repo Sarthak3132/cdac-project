@@ -90,49 +90,4 @@ public final class ProblemSpecification {
             return cb.equal(tagJoin.get("name"), tag);
         };
     }
-
-
-    /*
-    private static Specification<ProblemEntity> solved(
-            Boolean solved,
-            Long userId
-    ) {
-
-        return (root, query, cb) -> {
-
-            if (solved == null) {
-                return cb.conjunction();
-            }
-
-            Subquery<Long> subQuery = query.subquery(Long.class);
-
-            Root<SubmissionEntity> submission =
-                    subQuery.from(SubmissionEntity.class);
-
-            subQuery.select(submission.get("id"));
-
-            subQuery.where(
-
-                    cb.equal(
-                            submission.get("problem"),
-                            root
-                    ),
-
-                    cb.equal(
-                            submission.get("user").get("id"),
-                            userId
-                    ),
-
-                    cb.equal(
-                            submission.get("status"),
-                            SubmissionStatus.ACCEPTED
-                    )
-            );
-
-            return solved
-                    ? cb.exists(subQuery)
-                    : cb.not(cb.exists(subQuery));
-        };
-    }
-    */
 }
