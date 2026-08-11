@@ -6,7 +6,7 @@ interface Props {
 }
 
 export const socket = new Client({
-  brokerURL: `${import.meta.env.VITE_WS_URL}/ws`,
+  brokerURL: `${import.meta.env.VITE_WS_URL}`,
   // or "ws://localhost:8080/ws"
 
   reconnectDelay: 5000,

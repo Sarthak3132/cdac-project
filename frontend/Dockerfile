@@ -9,8 +9,8 @@ RUN npm ci
 COPY . .
 
 # Vite bakes these into the JS bundle at build time
-ENV VITE_API_URL=http://api.devcompiler.vishalborle.online
-ENV VITE_WS_URL=ws://api.devcompiler.vishalborle.online
+ENV VITE_API_URL=http://api.devcompiler.vishalborle.online/api/v1
+ENV VITE_WS_URL=ws://api.devcompiler.vishalborle.online/ws
 
 RUN npm run build
 
