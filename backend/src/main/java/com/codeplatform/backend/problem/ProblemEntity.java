@@ -1,0 +1,72 @@
+package com.codeplatform.backend.problem;
+
+import com.codeplatform.backend.tags.TagEntity;
+import com.codeplatform.backend.user.UserEntity;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "problems")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ProblemEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author", nullable = false)
+    @ToString.Exclude
+    private UserEntity author;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false, unique = true)
+    private String slug;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProblemDifficulty problemDifficulty;
+
+    @Column(name = "time_limit_ms", nullable = false)
+    private Integer timeLimitMs;
+
+    @Column(name = "memory_limit_kb", nullable = false)
+    private Integer memoryLimitKb;
+
+    @Builder.Default
+    @Column(name = "is_published", nullable = false)
+    private Boolean isPublished = false;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "problem_tags",
+            joinColumns = @JoinColumn(name = "problem_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    @Builder.Default
+    @ToString.Exclude
+    private Set<TagEntity> tags = new HashSet<>();
+}

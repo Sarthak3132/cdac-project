@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cp_db
+    username: cp_user
+    password: cp_pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: cp_user
+    password: cp_pass
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+logging:
+  level:
+    root : INFO
+    com.codeplatform.backend: INFO
+app:
+  jwt:
+    secret: your-very-long-secret-key-min-256-bits
+    access-expiration : 900000
+    refresh-expiration : 604800000

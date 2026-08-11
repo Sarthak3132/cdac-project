@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: problemSubmit
+  main:
+    web-application-type: none
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+    virtual-host: ${RABBIT_VHOST:/}
+
+judge0:
+  base-url: ${JUDGE0_BASE_URL}
+
+logging:
+  level:
+    com.worker.problemSubmit: WARN
