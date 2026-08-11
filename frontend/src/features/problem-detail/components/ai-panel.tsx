@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Bot, Loader2, Send, Sparkles } from "lucide-react";
-
+import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,8 +20,8 @@ export function AiPanel({ problem }: { problem: ProblemDetails }) {
     (state: RootState) => state.problemEditor,
   );
   const code = codeByProblem[problem.id]?.[selectedLanguage] ?? "";
+  const [chatSessionId] = useState(() => uuidv4());
 
-  const [chatSessionId] = useState(() => crypto.randomUUID());
   const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
   const [isChatting, setIsChatting] = useState(false);
