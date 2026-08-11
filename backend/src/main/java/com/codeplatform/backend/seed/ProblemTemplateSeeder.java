@@ -17,7 +17,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Profile("dev")
+@Profile("prod")
 @Slf4j
 @Order(8)
 public class ProblemTemplateSeeder implements CommandLineRunner {

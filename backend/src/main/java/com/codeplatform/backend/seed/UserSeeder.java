@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Profile("dev")
+@Profile("prod")
 @Slf4j
 @Order(1)
 public class UserSeeder implements CommandLineRunner {

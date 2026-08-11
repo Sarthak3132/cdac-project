@@ -4,14 +4,15 @@ spring:
   main:
     web-application-type: none
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: cp_user
-    password: cp_pass
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+    virtual-host: ${RABBIT_VHOST:/}
 
 judge0:
-  base-url: http://13.234.30.137:2358
+  base-url: ${JUDGE0_BASE_URL}
 
 logging:
   level:
-    com.worker.problemSubmit : WARN
+    com.worker.problemSubmit: WARN

@@ -20,7 +20,7 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-@Profile("dev")
+@Profile("prod")
 @Slf4j
 @Order(3)
 public class ProblemSeeder implements CommandLineRunner {

@@ -19,6 +19,7 @@ import PageNotFound from "@/pages/page-not-found";
 import Dashboard from "@/pages/admin/dashboard";
 import Problems from "@/pages/admin/problems";
 import ProblemExamples from "@/pages/admin/problem-examples";
+import Leaderboard from "@/pages/app/leaderboard";
 import Testcases from "@/pages/admin/testcases";
 import Hints from "@/pages/admin/hints";
 import Users from "@/pages/admin/users";
@@ -52,6 +53,7 @@ export default function AppRoutes() {
             <Route path="/app/problems/:id" element={<ProblemDetail />} />
             <Route path="/app/submission/:id" element={<ProblemSubmission />} />
             <Route path="/app/profile" element={<Profile />} />
+            <Route path="/app/leaderboard" element={<Leaderboard />} />
           </Route>
         </Route>
         {/* Admin */}
