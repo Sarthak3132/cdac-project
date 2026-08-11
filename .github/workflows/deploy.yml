@@ -69,7 +69,7 @@ jobs:
             set -e
             cd ~/cdac-project
 
-            docker login -u "${{ secrets.DOCKER_USER }}" -p "${{ secrets.DOCKER_TOKEN }}"
+            echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
 
             export DOCKER_USER=${{ secrets.DOCKER_USER }}
             export TAG=${{ github.sha }}
