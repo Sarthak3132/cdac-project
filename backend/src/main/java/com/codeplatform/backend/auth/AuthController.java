@@ -39,7 +39,7 @@ public class AuthController {
     private ResponseCookie buildCookie(String name, String value, String path, int maxAge) {
         return ResponseCookie.from(name, value)
                 .httpOnly(true)
-                .secure(true)      // false for local development
+                .secure(false)      // false for local development
                 .sameSite("Lax")
                 .path(path)
                 .maxAge(maxAge)
