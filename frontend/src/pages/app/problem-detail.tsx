@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { ProblemPanel } from "@/features/problem-detail/components/problem-panel";
 import { EditorPanel } from "@/features/problem-detail/components/editor-panel";
-import { OutputPanel } from "@/features/problem-detail/components/output-panel";
 import { api } from "@/services/axios-interceptor";
 import { cn } from "@/lib/utils";
 

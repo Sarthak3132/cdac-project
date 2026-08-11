@@ -61,11 +61,11 @@ export function NavMobile({ links, user, initials, onLogout }: NavMobileProps) {
           <div className="space-y-1 p-3">
             <div className="flex items-center gap-3 px-3 py-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                <AvatarImage src={user.avatarUrl} alt={user.username} />
                 <AvatarFallback className="text-xs">{initials}</AvatarFallback>
               </Avatar>
               <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-medium">{user.name}</span>
+                <span className="truncate text-sm font-medium">{user.username}</span>
                 <span className="text-muted-foreground truncate text-xs">{user.email}</span>
               </div>
             </div>

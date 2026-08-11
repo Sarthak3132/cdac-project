@@ -6,7 +6,6 @@ import {
   Languages,
   Code2,
   Tags,
-  FileText,
   FlaskConical,
   Lightbulb,
   ChevronRight,
