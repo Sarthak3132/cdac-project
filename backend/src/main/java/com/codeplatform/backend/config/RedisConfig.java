@@ -30,7 +30,7 @@ public class RedisConfig {
     @Value("${REDIS_PASSWORD}")
     private String redisPassword;
 
-    @Value("${REDIS_SSL_ENABLED:true}")
+    @Value("${REDIS_SSL_ENABLED:false}")
     private boolean sslEnabled;
 
     private LettuceConnectionFactory connectionFactory;
