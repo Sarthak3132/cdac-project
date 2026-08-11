@@ -58,11 +58,11 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        // WebSocketConfig.java
-        registry.addEndpoint("/ws").setAllowedOriginPatterns(
-                "http://localhost:5173",
-                "http://devcompiler.vishalborle.online"
-        );
+        // SecurityConfig.java
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173",
+            "http://devcompiler.vishalborle.online"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
