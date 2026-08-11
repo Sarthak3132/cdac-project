@@ -10,6 +10,7 @@ import { NavDesktop } from "./nav-desktop";
 import { NavUserDropdown } from "./nav-user-dropdown";
 import { NavMobile } from "./nav-mobile";
 import type { NavLinkItem } from "@/types/navbar";
+import { api } from "@/services/axios-interceptor";
 
 const NAV_LINKS: NavLinkItem[] = [
   { label: "Code Compiler", to: "/app/compiler" },
@@ -31,13 +32,18 @@ export function Navbar({ variant }: NavbarProps) {
   const isPublic = variant === "public";
   const isAuthenticated = variant === "authenticated";
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+    } finally {
+      dispatch(logout());
+      navigate("/login");
+    }
   };
 
-  const initials = user?.name
-    ? user.name
+  const initials = user?.username
+    ? user.username
         .split(" ")
         .map((n: string) => n[0])
         .join("")

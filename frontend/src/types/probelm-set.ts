@@ -26,8 +26,10 @@ export interface Problem {
 }
 
 export interface ProblemTableProps {
-  problems: Problem[];
+  problems: ProblemSummary[];
   page: number;
+  totalPages: number;
+  loading: boolean;
   onPageChange: (page: number) => void;
 }
 
@@ -37,4 +39,13 @@ export interface ProblemFiltersProps {
   totalFiltered: number;
   onSearchChange: (value: string) => void;
   onLevelChange: (value: string) => void;
+}
+
+export interface ProblemSummary {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  problemDifficulty: "EASY" | "MEDIUM" | "HARD";
+  createdAt: string;
 }

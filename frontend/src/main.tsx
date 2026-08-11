@@ -6,13 +6,16 @@ import "./index.css"; // <-- MAKe SURE THIS IMPORT EXISTS
 import App from "./App";
 import { store } from "./app/store";
 import { ThemeProvider } from "./context/theme-context";
+import WebSocketProvider from "./app/websocket-provider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <Provider store={store}>
-    <ThemeProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ThemeProvider>
-  </Provider>,
+  <WebSocketProvider>
+    <Provider store={store}>
+      <ThemeProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  </WebSocketProvider>,
 );

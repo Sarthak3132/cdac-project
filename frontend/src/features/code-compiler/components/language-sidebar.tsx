@@ -13,7 +13,7 @@ export function LanguageSidebar({
   onSelect: (l: Language) => void;
 }) {
   return (
-    <aside className="border-border bg-muted/30 flex w-12 shrink-0 flex-col items-center gap-1 border-r py-3">
+    <aside className="border-border bg-muxted/30 flex w-12 shrink-0 flex-col items-center gap-1 border-r py-3">
       {languages.map((lang) => (
         <Tooltip key={lang.id} delayDuration={200}>
           <TooltipTrigger asChild>
@@ -28,10 +28,19 @@ export function LanguageSidebar({
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {lang.label}
+              {lang.shortName}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right">{lang.label}</TooltipContent>
+          <TooltipContent side="right" className="max-w-xs">
+            <div className="space-y-1">
+              <p className="font-medium">{lang.name}</p>
+
+              <div className="text-muted-foreground text-xs">
+                <p>Version: {lang.version}</p>
+                <p>Extension: {lang.fileExtension}</p>
+              </div>
+            </div>
+          </TooltipContent>
         </Tooltip>
       ))}
     </aside>

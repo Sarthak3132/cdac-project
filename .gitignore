@@ -1,0 +1,3 @@
+# Runtime logs
+/log/*
+/cdac-services.pid

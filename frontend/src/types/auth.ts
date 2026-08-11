@@ -1,7 +1,7 @@
 export interface User {
   avatarUrl: string | undefined;
   id: string;
-  name: string;
+  username: string;
   email: string;
   role: string;
 }
@@ -12,7 +12,7 @@ export interface AuthState {
 }
 
 export interface AuthLayoutProps {
-  title: string
-  subtitle?: string
-  children: React.ReactNode
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
 }

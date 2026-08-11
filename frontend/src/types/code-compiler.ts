@@ -1,12 +1,13 @@
 export type Language = {
   id: string;
-  label: string;
-  monacoId: string;
-  defaultCode: string;
+  name: string;
+  version: string;
+  shortName: string;
+  fileExtension: string;
+  judge0LanguageId: number;
 };
 
 export interface CompilerState {
-  selectedLanguage: string;
+  selectedLanguage: string | null;
   codeByLanguage: Record<string, string>;
 }
-

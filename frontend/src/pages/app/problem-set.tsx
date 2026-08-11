@@ -1,38 +1,117 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Trophy, Flame, Circle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { dummyProblems } from "@/features/problem-set/data/dummy-problems";
+
 import { StatsBar } from "@/features/problem-set/components/stats-bar";
 import { ProblemFilter } from "@/features/problem-set/components/problem-filter";
 import { ProblemTable } from "@/features/problem-set/components/problem-table";
 
-const TOPICS = ["Array", "String", "Hash Table", "Tree", "Graph", "DP", "Linked List"];
+import type { ProblemSummary } from "@/types/probelm-set";
+import { api } from "@/services/axios-interceptor";
+
+const PAGE_SIZE = 10;
+
+type Tags = {
+  id: number;
+  name: string;
+};
 
 export default function ProblemSet() {
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [level, setLevel] = useState("All");
-  const [activeTopic, setActiveTopic] = useState<string | null>(null);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  const filtered = dummyProblems.filter((p) => {
-    const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
-    const matchLevel = level === "All" || p.level === level;
-    const matchTopic = !activeTopic || p.tags?.includes(activeTopic);
-    return matchSearch && matchLevel && matchTopic;
-  });
+  const [tags, setTags] = useState<Tags[]>([]);
 
-  const handleSearch = (v: string) => {
-    setSearch(v);
+  const [problems, setProblems] = useState<ProblemSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
+  const getProblems = async (
+    page: number,
+    size: number,
+    search: string,
+    difficulty?: string,
+    tag?: string | null,
+  ) => {
+    const params: Record<string, string | number> = {
+      page,
+      size,
+    };
+
+    if (search.trim()) {
+      params.search = search;
+    }
+
+    if (difficulty && difficulty !== "All") {
+      params.difficulty = difficulty.toUpperCase();
+    }
+
+    if (tag && tag.trim()) {
+      params.tag = tag;
+    }
+
+    const res = await api.get<any>("/problems", {
+      params,
+    });
+
+    return res.data.data;
+  };
+  const fetchProblems = async () => {
+    setLoading(true);
+
+    try {
+      const data = await getProblems(
+        page - 1, // Spring uses 0-based pages
+        PAGE_SIZE,
+        search,
+        level,
+        activeTag,
+      );
+
+      setProblems(data.content);
+      setTotalPages(data.totalPages);
+      setTotalElements(data.totalElements);
+    } catch (error) {
+      console.error("Error fetching problems:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTags = async () => {
+    const res = await api.get("/tags");
+    setTags(res.data.data);
+  };
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
+
+  useEffect(() => {
+    fetchProblems();
+  }, [page, search, level, activeTag]);
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
     setPage(1);
   };
-  const handleLevel = (v: string) => {
-    setLevel(v);
+
+  const handleLevel = (value: string) => {
+    setLevel(value);
     setPage(1);
   };
-  const handleTopic = (t: string) => {
-    setActiveTopic((prev) => (prev === t ? null : t));
+
+  const handleTags = (tag: string) => {
+    setActiveTag((prev) => (prev === tag ? null : tag));
     setPage(1);
   };
 
@@ -40,15 +119,14 @@ export default function ProblemSet() {
     <div className="flex h-screen flex-col overflow-hidden">
       <StatsBar />
 
-      <div className="flex h-screen flex-1 overflow-hidden">
-        {/* Left sidebar */}
+      <div className="flex flex-1 overflow-hidden">
         <aside className="border-border bg-muted/20 hidden w-52 shrink-0 flex-col gap-4 border-r p-4 md:flex">
-          {/* Quick Stats */}
           <Card>
             <CardContent className="space-y-1 p-3">
               <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
                 Quick Stats
               </p>
+
               {[
                 {
                   icon: <Trophy className="h-4 w-4 text-yellow-500" />,
@@ -68,6 +146,7 @@ export default function ProblemSet() {
               ].map(({ icon, label, value }) => (
                 <div key={label} className="flex items-center gap-2 rounded-md px-2 py-1.5">
                   {icon}
+
                   <span className="text-sm">
                     {label} <span className="font-semibold">{value}</span>
                   </span>
@@ -76,31 +155,43 @@ export default function ProblemSet() {
             </CardContent>
           </Card>
 
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start gap-2"
+            onClick={() => navigate("/app/leaderboard")}
+          >
+            <Trophy className="h-4 w-4 text-yellow-500" />
+            View Leaderboard
+          </Button>
+
           <Separator />
 
-          {/* Topics */}
           <div>
             <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-              Topics
+              Tags
             </p>
-            <div className="flex flex-col gap-0.5">
-              {TOPICS.map((topic) => (
-                <Button
-                  key={topic}
-                  variant={activeTopic === topic ? "secondary" : "ghost"}
-                  size="sm"
-                  className="h-8 justify-start text-sm font-normal"
-                  onClick={() => handleTopic(topic)}
-                >
-                  {topic}
-                </Button>
-              ))}
-              {activeTopic && (
+
+            <div className="flex flex-col gap-1">
+              {tags.length > 0 &&
+                tags.map((tag) => (
+                  <Button
+                    key={tag.id}
+                    variant={activeTag === tag.name ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 justify-start text-sm font-normal"
+                    onClick={() => handleTags(tag.name)}
+                  >
+                    {tag.name}
+                  </Button>
+                ))}
+
+              {activeTag && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setActiveTopic(null)}
-                  className="text-muted-foreground mt-1 h-8 justify-start text-xs underline"
+                  className="text-muted-foreground mt-2 h-8 justify-start text-xs underline"
+                  onClick={() => setActiveTag(null)}
                 >
                   Clear filter
                 </Button>
@@ -109,16 +200,22 @@ export default function ProblemSet() {
           </div>
         </aside>
 
-        {/* Table area */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <ProblemFilter
             search={search}
             level={level}
-            totalFiltered={filtered.length}
+            totalFiltered={totalElements}
             onSearchChange={handleSearch}
             onLevelChange={handleLevel}
           />
-          <ProblemTable problems={filtered} page={page} onPageChange={setPage} />
+
+          <ProblemTable
+            problems={problems}
+            page={page}
+            totalPages={totalPages}
+            loading={loading}
+            onPageChange={setPage}
+          />
         </div>
       </div>
     </div>

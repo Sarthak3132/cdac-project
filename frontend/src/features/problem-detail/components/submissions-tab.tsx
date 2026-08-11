@@ -1,19 +1,13 @@
-// components/problem/SubmissionsTab.tsx
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { useNavigate } from "react-router-dom";
-import { DUMMY_SUBMISSIONS } from "@/features/submission/data/dummy-submission";
-import type { SubmissionStatus } from "@/types/submissions";
-import { Clock, ExternalLink, HardDrive } from "lucide-react";
+import { fetchSubmissionsForProblem } from "@/features/submission/api/submission-api";
+import { VERDICT_TO_STATUS } from "@/types/submissions";
+import type { SubmissionListItem, SubmissionStatus } from "@/types/submissions";
 
 const STATUS_STYLES: Record<SubmissionStatus, string> = {
   Accepted: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -25,105 +19,94 @@ const STATUS_STYLES: Record<SubmissionStatus, string> = {
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {
-  cpp: "C++",
-  python: "Python",
-  java: "Java",
-  javascript: "JavaScript",
-  typescript: "TypeScript",
-  go: "Go",
-  rust: "Rust",
+  cpp: "Cpp", python: "Python", java: "Java",
+  javascript: "JavaScript", typescript: "TypeScript", go: "Go", rust: "Rust",
 };
 
 function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
   });
 }
+const formatRuntime = (ms: number | null) => (ms == null ? "—" : `${ms} ms`);
+const formatMemory = (kb: number | null) => (kb == null ? "—" : `${(kb / 1024).toFixed(1)} MB`);
 
-export function SubmissionsTab() {
+interface SubmissionsTabProps {
+  problemId: number;
+}
+
+export function SubmissionsTab({ problemId }: SubmissionsTabProps) {
   const navigate = useNavigate();
+  const [submissions, setSubmissions] = useState<SubmissionListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const submissions = [...DUMMY_SUBMISSIONS].sort(
-    (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime(),
-  );
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchSubmissionsForProblem(problemId)
+      .then((data) => !cancelled && setSubmissions(data))
+      .catch(() => !cancelled && setError(true))
+      .finally(() => !cancelled && setLoading(false));
+    return () => { cancelled = true; };
+  }, [problemId]);
+
+  if (loading) return <div className="text-muted-foreground p-6 text-sm">Loading submissions…</div>;
+  if (error) return <div className="p-6 text-sm text-red-500">Couldn't load submissions.</div>;
 
   if (submissions.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-        <div className="bg-muted rounded-full p-4">
-          <Clock className="text-muted-foreground h-6 w-6" />
-        </div>
-        <p className="text-muted-foreground text-sm">No submissions yet.</p>
-        <p className="text-muted-foreground text-xs">Submit your solution to see results here.</p>
+      <div className="text-muted-foreground p-8 text-center text-sm">
+        No submissions yet.
+        <br />
+        Submit your solution to see results here.
       </div>
     );
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="p-4">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs font-semibold">Status</TableHead>
-              <TableHead className="text-xs font-semibold">Language</TableHead>
-              <TableHead className="text-xs font-semibold">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" /> Runtime
-                </span>
-              </TableHead>
-              <TableHead className="text-xs font-semibold">
-                <span className="flex items-center gap-1">
-                  <HardDrive className="h-3 w-3" /> Memory
-                </span>
-              </TableHead>
-              <TableHead className="text-xs font-semibold">Submitted</TableHead>
-              <TableHead className="text-right text-xs font-semibold">Details</TableHead>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Status</TableHead>
+          <TableHead>Language</TableHead>
+          <TableHead>Runtime</TableHead>
+          <TableHead>Memory</TableHead>
+          <TableHead>Submitted</TableHead>
+          <TableHead>Details</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {submissions.map((sub) => {
+          const status = sub.verdict === "PENDING" ? null : VERDICT_TO_STATUS[sub.verdict];
+          return (
+            <TableRow
+              key={sub.id}
+              className="cursor-pointer"
+              onClick={() => navigate(`/app/submission/${sub.id}`)}
+            >
+              <TableCell>
+                <Badge variant="outline" className={`text-xs font-medium ${status ? STATUS_STYLES[status] : ""}`}>
+                  {status ?? "Pending"}
+                </Badge>
+              </TableCell>
+              <TableCell>{LANGUAGE_LABELS[sub.language] ?? sub.language}</TableCell>
+              <TableCell>{formatRuntime(sub.cpuTimeMs)}</TableCell>
+              <TableCell>{formatMemory(sub.memoryUsageKb)}</TableCell>
+              <TableCell>{formatDate(sub.submittedAt)}</TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost" size="sm"
+                  className="text-muted-foreground hover:text-foreground h-7 gap-1 px-2 text-xs"
+                  onClick={(e) => { e.stopPropagation(); navigate(`/app/submission/${sub.id}`); }}
+                >
+                  View
+                </Button>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {submissions.map((sub) => (
-              <TableRow key={sub.id} className="hover:bg-muted/40 cursor-pointer transition-colors">
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={`text-xs font-medium ${STATUS_STYLES[sub.status]}`}
-                  >
-                    {sub.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {LANGUAGE_LABELS[sub.language] ?? sub.language}
-                </TableCell>
-                <TableCell className="font-mono text-sm">{sub.runtime}</TableCell>
-                <TableCell className="font-mono text-sm">{sub.memory}</TableCell>
-                <TableCell className="text-muted-foreground text-xs">
-                  {formatDate(sub.submittedAt)}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground h-7 gap-1 px-2 text-xs"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/app/submission/${sub.id}`);
-                    }}
-                  >
-                    View
-                    <ExternalLink className="h-3 w-3" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </ScrollArea>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 }

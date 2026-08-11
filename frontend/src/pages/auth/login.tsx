@@ -7,6 +7,7 @@ import AuthWrapper from "../../features/auth/components/auth-wrapper";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { api } from "@/services/axios-interceptor";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -17,27 +18,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!email || !password) {
+      setError("Email and password are required");
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
-      if (email === "test@test.com" && password === "password") {
-        dispatch(
-          login({
-            id: "1",
-            name: "Test User",
-            email: email,
-            role: "USER",
-            avatarUrl: undefined,
-          }),
-        );
+    setError("");
+
+    try {
+      await api.post("/auth/login", { email, password });
+      const res = await api.get("/auth/me");
+      const user = res.data.data;
+
+
+      dispatch(login(user));
+      
+      if (user.role == "USER") {
         navigate("/app/compiler");
       } else {
-        setError("Invalid email or password");
-        setIsLoading(false);
+        navigate("/admin/dashboard");
       }
-    }, 2000);
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Login failed. Please try again.";
+      setError(message);
+      setIsLoading(false);
+    }
   };
 
   return (
