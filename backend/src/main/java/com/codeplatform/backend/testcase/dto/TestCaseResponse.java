@@ -1,5 +1,6 @@
 package com.codeplatform.backend.testcase.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -13,4 +14,5 @@ public class TestCaseResponse {
     private String displayInput;
     private String expectedOutput;
     private String explanation;
+    private Boolean visible;
 }

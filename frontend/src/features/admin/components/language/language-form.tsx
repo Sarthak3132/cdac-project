@@ -8,15 +8,12 @@ import { Label } from "@/components/ui/label";
 
 export interface LanguageFormValues {
   name: string;
+  shortName: string;
+  fileExtension: string;
   version: string;
-  dockerImage: string;
-  sourceFile: string;
-  compileCommand: string;
-  runCommand: string;
-  isCompiled: boolean;
+  judge0LanguageId: string;
   enabled: boolean;
 }
-
 interface LanguageFormProps {
   mode: "create" | "update";
   initialValues?: Partial<LanguageFormValues>;
@@ -27,12 +24,10 @@ interface LanguageFormProps {
 
 const DEFAULT_VALUES: LanguageFormValues = {
   name: "",
+  shortName: "",
+  fileExtension: "",
   version: "",
-  dockerImage: "",
-  sourceFile: "",
-  compileCommand: "",
-  runCommand: "",
-  isCompiled: false,
+  judge0LanguageId: "",
   enabled: true,
 };
 
@@ -59,29 +54,28 @@ export function LanguageForm({
     }
   }, [initialValues]);
 
-  const validate = () => {
-    const next: Record<string, string> = {};
+ const validate = () => {
+  const next: Record<string, string> = {};
 
-    if (!values.name.trim())
-      next.name = "Name is required";
+  if (!values.name.trim())
+    next.name = "Name is required";
 
-    if (!values.version.trim())
-      next.version = "Version is required";
+  if (!values.shortName.trim())
+    next.shortName = "Short name is required";
 
-    if (!values.dockerImage.trim())
-      next.dockerImage = "Docker image is required";
+  if (!values.fileExtension.trim())
+    next.fileExtension = "File extension is required";
 
-    if (!values.sourceFile.trim())
-      next.sourceFile = "Source file is required";
+  if (!values.version.trim())
+    next.version = "Version is required";
 
-    if (!values.runCommand.trim())
-      next.runCommand = "Run command is required";
+  if (!values.judge0LanguageId.trim())
+    next.judge0LanguageId = "Judge0 Language ID is required";
 
-    setErrors(next);
+  setErrors(next);
 
-    return Object.keys(next).length === 0;
-  };
-
+  return Object.keys(next).length === 0;
+};
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -130,91 +124,76 @@ export function LanguageForm({
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label>Docker Image</Label>
-        <Input
-          value={values.dockerImage}
-          onChange={(e) =>
-            setValues((prev) => ({
-              ...prev,
-              dockerImage: e.target.value,
-            }))
-          }
-          placeholder="openjdk:21"
-        />
-        {errors.dockerImage && (
-          <p className="text-sm text-destructive">
-            {errors.dockerImage}
-          </p>
-        )}
-      </div>
+        <div className="space-y-2">
+  <Label>Short Name</Label>
 
-      <div className="space-y-2">
-        <Label>Source File</Label>
-        <Input
-          value={values.sourceFile}
-          onChange={(e) =>
-            setValues((prev) => ({
-              ...prev,
-              sourceFile: e.target.value,
-            }))
-          }
-          placeholder="Main.java"
-        />
-        {errors.sourceFile && (
-          <p className="text-sm text-destructive">
-            {errors.sourceFile}
-          </p>
-        )}
-      </div>
+  <Input
+    value={values.shortName}
+    onChange={(e) =>
+      setValues((prev) => ({
+        ...prev,
+        shortName: e.target.value,
+      }))
+    }
+    placeholder="java"
+  />
 
-      <div className="space-y-2">
-        <Label>Compile Command</Label>
-        <Input
-          value={values.compileCommand}
-          onChange={(e) =>
-            setValues((prev) => ({
-              ...prev,
-              compileCommand: e.target.value,
-            }))
-          }
-          placeholder="javac Main.java"
-        />
-      </div>
+  {errors.shortName && (
+    <p className="text-sm text-destructive">
+      {errors.shortName}
+    </p>
+  )}
+</div>
 
-      <div className="space-y-2">
-        <Label>Run Command</Label>
-        <Input
-          value={values.runCommand}
-          onChange={(e) =>
-            setValues((prev) => ({
-              ...prev,
-              runCommand: e.target.value,
-            }))
-          }
-          placeholder="java Main"
-        />
-        {errors.runCommand && (
-          <p className="text-sm text-destructive">
-            {errors.runCommand}
-          </p>
-        )}
-      </div>
+<div className="space-y-2">
+  <Label>File Extension</Label>
+
+  <Input
+    value={values.fileExtension}
+    onChange={(e) =>
+      setValues((prev) => ({
+        ...prev,
+        fileExtension: e.target.value,
+      }))
+    }
+    placeholder=".java"
+  />
+
+  {errors.fileExtension && (
+    <p className="text-sm text-destructive">
+      {errors.fileExtension}
+    </p>
+  )}
+</div>
+      
+
+      
+<div className="space-y-2">
+  <Label>Judge0 Language ID</Label>
+
+  <Input
+    type="number"
+    value={values.judge0LanguageId}
+    onChange={(e) =>
+      setValues((prev) => ({
+        ...prev,
+        judge0LanguageId: e.target.value,
+      }))
+    }
+    placeholder="62"
+  />
+
+  {errors.judge0LanguageId && (
+    <p className="text-sm text-destructive">
+      {errors.judge0LanguageId}
+    </p>
+  )}
+</div>
+      
+
+      
 
       <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            checked={values.isCompiled}
-            onCheckedChange={(checked) =>
-              setValues((prev) => ({
-                ...prev,
-                isCompiled: checked === true,
-              }))
-            }
-          />
-          <Label>Compiled Language</Label>
-        </div>
-
         <div className="flex items-center gap-2">
           <Checkbox
             checked={values.enabled}

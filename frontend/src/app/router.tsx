@@ -18,7 +18,6 @@ import LandingPage from "@/pages/landing-page";
 import PageNotFound from "@/pages/page-not-found";
 import Dashboard from "@/pages/admin/dashboard";
 import Problems from "@/pages/admin/problems";
-import ProblemExamples from "@/pages/admin/problem-examples";
 import Leaderboard from "@/pages/app/leaderboard";
 import Testcases from "@/pages/admin/testcases";
 import Hints from "@/pages/admin/hints";
@@ -66,7 +65,6 @@ export default function AppRoutes() {
             <Route path="problems/create" element={<ProblemCreate />} />
             <Route path="problems/update/:id" element={<ProblemUpdate />} />
             <Route path="tags" element={<Tags />} />
-            {/* <Route path="problem-examples" element={<ProblemExamples />} /> */}
             <Route
               path="problem-templates/:problemId/:problemTitle"
               element={<ProblemTemplate />}

@@ -59,12 +59,13 @@ function Languages() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Short Name</TableHead>
+              <TableHead>Extension</TableHead>
               <TableHead>Version</TableHead>
-              <TableHead>Compiled</TableHead>
+              <TableHead>Judge0 ID</TableHead>
               <TableHead>Enabled</TableHead>
-              <TableHead>Docker Image</TableHead>
               <TableHead className="text-right">
-                Actions
+                  Actions
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -73,7 +74,7 @@ function Languages() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 6 }).map((_, j) => (
+                  {Array.from({ length: 7 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -83,7 +84,7 @@ function Languages() {
             ) : languages.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
                   No languages found.
@@ -92,76 +93,67 @@ function Languages() {
             ) : (
               languages.map((language) => (
                 <TableRow key={language.id}>
-                  <TableCell className="font-medium">
-                    {language.name}
-                  </TableCell>
+  <TableCell className="font-medium">
+    {language.name}
+  </TableCell>
 
-                  <TableCell>{language.version}</TableCell>
+  <TableCell>
+    {language.shortName}
+  </TableCell>
 
-                  <TableCell>
-                    <Badge
-                      variant={
-                        language.isCompiled
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {language.isCompiled
-                        ? "Compiled"
-                        : "Interpreted"}
-                    </Badge>
-                  </TableCell>
+  <TableCell>
+    {language.fileExtension}
+  </TableCell>
 
-                  <TableCell>
-                    <Badge
-                      variant={
-                        language.enabled
-                          ? "default"
-                          : "destructive"
-                      }
-                    >
-                      {language.enabled
-                        ? "Enabled"
-                        : "Disabled"}
-                    </Badge>
-                  </TableCell>
+  <TableCell>
+    {language.version}
+  </TableCell>
 
-                  <TableCell className="max-w-xs truncate">
-                    {language.dockerImage}
-                  </TableCell>
+  <TableCell>
+    {language.judge0LanguageId}
+  </TableCell>
 
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <UpdateLanguageDialog
-                        language={language}
-                        onUpdated={fetchLanguages}
-                        trigger={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        }
-                      />
+  <TableCell>
+    <Badge
+      variant={
+        language.enabled
+          ? "default"
+          : "destructive"
+      }
+    >
+      {language.enabled ? "Enabled" : "Disabled"}
+    </Badge>
+  </TableCell>
 
-                      <DeleteLanguageDialog
-                        languageId={language.id}
-                        languageName={language.name}
-                        onDeleted={fetchLanguages}
-                        trigger={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        }
-                      />
-                    </div>
-                  </TableCell>
-                </TableRow>
+  <TableCell className="text-right">
+    <div className="flex justify-end gap-1">
+      <UpdateLanguageDialog
+        language={language}
+        onUpdated={fetchLanguages}
+        trigger={
+          <Button variant="ghost" size="icon">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        }
+      />
+
+      <DeleteLanguageDialog
+        languageId={language.id}
+        languageName={language.name}
+        onDeleted={fetchLanguages}
+        trigger={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        }
+      />
+    </div>
+  </TableCell>
+</TableRow>
               ))
             )}
           </TableBody>

@@ -37,15 +37,13 @@ export function UpdateLanguageDialog({
 
     try {
       await api.put(`/languages/${language.id}`, {
-        name: values.name,
-        version: values.version,
-        dockerImage: values.dockerImage,
-        sourceFile: values.sourceFile,
-        compileCommand: values.compileCommand || null,
-        runCommand: values.runCommand,
-        isCompiled: values.isCompiled,
-        enabled: values.enabled,
-      });
+  name: values.name,
+  shortName: values.shortName,
+  fileExtension: values.fileExtension,
+  version: values.version,
+  judge0LanguageId: Number(values.judge0LanguageId),
+  enabled: values.enabled,
+});
 
       toast.success("Language updated successfully");
 
@@ -85,12 +83,10 @@ export function UpdateLanguageDialog({
           mode="update"
           initialValues={{
             name: language.name,
+            shortName: language.shortName,
+            fileExtension: language.fileExtension,
             version: language.version,
-            dockerImage: language.dockerImage,
-            sourceFile: language.sourceFile,
-            compileCommand: language.compileCommand ?? "",
-            runCommand: language.runCommand,
-            isCompiled: language.isCompiled,
+            judge0LanguageId: language.judge0LanguageId.toString(),
             enabled: language.enabled,
           }}
           isSubmitting={isSubmitting}

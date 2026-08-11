@@ -37,9 +37,12 @@ export function CreateTestCaseDialog({
 
     try {
       await api.post(`/problems/${problemId}/testcases`, {
-        inputData: values.inputData,
-        expectedOutput: values.expectedOutput,
-      });
+      inputData: values.inputData,
+      displayInput: values.displayInput || null,
+      expectedOutput: values.expectedOutput,
+      explanation: values.explanation || null,
+      visible: values.visible,
+    });
 
       toast.success("Test case created successfully");
 
