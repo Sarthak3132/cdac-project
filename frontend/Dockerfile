@@ -8,8 +8,9 @@ RUN npm ci
 
 COPY . .
 
-ENV VITE_API_URL=http://13.234.30.137:8080/api/v1
-ENV VITE_WS_URL=ws://13.234.30.137:8080
+# Vite bakes these into the JS bundle at build time
+ENV VITE_API_URL=http://api.devcompiler.vishalborle.online
+ENV VITE_WS_URL=ws://api.devcompiler.vishalborle.online
 
 RUN npm run build
 
